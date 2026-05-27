@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
-
 import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
-
 import 'widgets/custom_bottom_nav.dart';
+import 'theme/app_colors.dart';
 
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'YOUR_SUPABASE_URL',
+    anonKey: 'YOUR_SUPABASE_ANON_KEY',
+  );
+
   runApp(const MyApp());
 }
 
@@ -16,49 +24,49 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Hydration Coach',
       debugShowCheckedModeBanner: false,
-      title: 'Hydration App',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
         useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.background,
+        colorScheme: const ColorScheme.light(
+          surface: AppColors.surface,
+          primary: AppColors.primary,
+          onSurface: AppColors.text,
+        ),
       ),
-      home: const MainScreen(),
+      home: const AppShell(),
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<AppShell> createState() => _AppShellState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  int currentIndex = 0;
+class _AppShellState extends State<AppShell> {
+  int _currentIndex = 0;
 
-  final List<Widget> pages = const [
+  static const _screens = [
     HomeScreen(),
     HistoryScreen(),
     SettingsScreen(),
   ];
 
-  void onTabTapped(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: pages[currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: CustomBottomNav(
-        currentIndex: currentIndex,
-        onTap: onTabTapped,
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
       ),
     );
   }
 }
-
