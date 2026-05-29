@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -15,7 +14,7 @@ class AuthField  extends StatelessWidget {
   final TextInputAction          textInputAction;
   final ValueChanged<String>?    onSubmitted;
 
-  const AuthField ({
+  const AuthField ({super.key,
     required this.controller,
     required this.focusNode,
     required this.label,

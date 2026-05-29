@@ -239,7 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     _buildLoginRow(),
                     const SizedBox(height: 24),
                   ],
-                    
+
                 ),
               ),
             ),
@@ -322,17 +322,30 @@ class _RegisterScreenState extends State<RegisterScreen>
   // ─── Fields ───────────────────────────────────────────────────────────────
 
   Widget _buildNameField() {
-    return _AuthField(
-      controller:      _nameController,
-      focusNode:       _nameFocus,
-      label:           'Full name',
-      hint:            'Alex Johnson',
-      icon:            Icons.person_outline_rounded,
-      inputType:       TextInputType.name,
-      capitalization:  TextCapitalization.words,
-      textInputAction: TextInputAction.next,
-      onSubmitted:     (_) =>
-          FocusScope.of(context).requestFocus(_emailFocus),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Email',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold
+          ),
+        ),
+        _AuthField(
+          controller:      _nameController,
+          focusNode:       _nameFocus,
+          label:           'Full name',
+          hint:            'Alex Johnson',
+          icon:            Icons.person_outline_rounded,
+          inputType:       TextInputType.name,
+          capitalization:  TextCapitalization.words,
+          textInputAction: TextInputAction.next,
+          onSubmitted:     (_) =>
+              FocusScope.of(context).requestFocus(_emailFocus),
+
+        ),
+      ]
     );
   }
 
@@ -351,27 +364,39 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildPasswordField() {
-    return _AuthField(
-      controller:      _passwordController,
-      focusNode:       _passwordFocus,
-      label:           'Password',
-      hint:            '••••••••',
-      icon:            Icons.lock_outline_rounded,
-      obscureText:     _obscurePassword,
-      textInputAction: TextInputAction.next,
-      onSubmitted:     (_) =>
-          FocusScope.of(context).requestFocus(_confirmFocus),
-      suffixIcon: IconButton(
-        icon: Icon(
-          _obscurePassword
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          color: AppColors.textMuted,
-          size: 20,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Password',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold
+          ),
         ),
-        onPressed: () =>
-            setState(() => _obscurePassword = !_obscurePassword),
-      ),
+        _AuthField(
+          controller:      _passwordController,
+          focusNode:       _passwordFocus,
+          label:           'Password',
+          hint:            '••••••••',
+          icon:            Icons.lock_outline_rounded,
+          obscureText:     _obscurePassword,
+          textInputAction: TextInputAction.next,
+          onSubmitted:     (_) =>
+              FocusScope.of(context).requestFocus(_confirmFocus),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
+            onPressed: () =>
+                setState(() => _obscurePassword = !_obscurePassword),
+          ),
+        ),
+      ]
     );
   }
 
@@ -526,7 +551,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.32),
+                color: AppColors.primary.withValues(alpha: 0.32),
                 blurRadius: 18,
                 offset: const Offset(0, 7),
               ),
@@ -571,7 +596,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             'or sign up with',
             style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textMuted.withOpacity(0.8)),
+                color: AppColors.textMuted.withValues(alpha: 0.8)),
           ),
         ),
         Expanded(
