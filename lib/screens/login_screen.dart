@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hydration_app/screens/sign_up_screen.dart';
 import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,17 +23,17 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
-  final _emailController    = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _emailFocus         = FocusNode();
-  final _passwordFocus      = FocusNode();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
 
   bool _obscurePassword = true;
-  bool _isLoading       = false;
+  bool _isLoading = false;
 
   late AnimationController _entryController;
-  late Animation<double>    _fadeAnim;
-  late Animation<Offset>    _slideAnim;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
 
   @override
   void initState() {
@@ -62,12 +63,16 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  //Bottom pop up message
-
   String? _validate() {
-    if (_emailController.text.isEmpty) return 'Please enter your email';
-    if (!_emailController.text.contains('@')) return 'Enter a valid email address';
-    if (_passwordController.text.length < 6)  return 'Password must be at least 6 characters';
+    if (_emailController.text.isEmpty){
+      return 'Please enter your email';
+    }
+    if (!_emailController.text.contains('@')){
+      return 'Enter a valid email address';
+    }
+    if (_passwordController.text.length < 6){
+      return 'Password must be at least 6 characters';
+    }
     return null;
   }
 
@@ -87,20 +92,20 @@ class _LoginScreenState extends State<LoginScreen>
 
     try {
       final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: _emailController.text,
+        password: _passwordController.text,
       );
 
       if (response.user != null) {
         widget.onLogin();
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
+        SnackBar(content: Text(error.message)),
       );
-    } catch (e) {
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(error.toString())),
       );
     }
 
@@ -108,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -126,24 +130,52 @@ class _LoginScreenState extends State<LoginScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 70),
+
                   _buildLogo(),
+
                   const SizedBox(height: 40),
-                  _buildHeading(),
-                  const SizedBox(height: 36),
-                  _buildEmailField(),
-                  const SizedBox(height: 14),
-                  _buildPasswordField(),
-                  const SizedBox(height: 10),
-                  _buildForgotPassword(),
-                  const SizedBox(height: 32),
-                  _buildLoginButton(),
-                  const SizedBox(height: 24),
-                  _buildDivider(),
-                  const SizedBox(height: 24),
-                  _buildSocialButtons(),
-                  const SizedBox(height: 40),
-                  _buildRegisterRow(),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: AppColors.cardBorder,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        _buildHeading(),
+                        const SizedBox(height: 36),
+                        _buildEmailField(),
+                        const SizedBox(height: 14),
+                        _buildPasswordField(),
+                        const SizedBox(height: 10),
+                        _buildForgotPassword(),
+                        const SizedBox(height: 32),
+                        _buildLoginButton(),
+                        const SizedBox(height: 24),
+                        _buildDivider(),
+                        const SizedBox(height: 24),
+                        _buildSocialButtons(),
+                        const SizedBox(height: 40),
+                        _buildRegisterRow(),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -223,40 +255,73 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildEmailField() {
-    return AuthField(
-      controller:      _emailController,
-      focusNode:       _emailFocus,
-      label:           'Email address',
-      hint:            'you@example.com',
-      icon:            Icons.mail_outline_rounded,
-      inputType:       TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      onSubmitted:     (_) =>
-          FocusScope.of(context).requestFocus(_passwordFocus),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        const Text(
+          'Email',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        AuthField(
+          controller: _emailController,
+          focusNode: _emailFocus,
+          label: 'Email address',
+          hint: 'you@example.com',
+          icon: Icons.mail_outline_rounded,
+          inputType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocus),
+        ),
+      ],
     );
   }
 
   Widget _buildPasswordField() {
-    return AuthField(
-      controller:      _passwordController,
-      focusNode:       _passwordFocus,
-      label:           'Password',
-      hint:            '••••••••',
-      icon:            Icons.lock_outline_rounded,
-      obscureText:     _obscurePassword,
-      textInputAction: TextInputAction.done,
-      onSubmitted:     (_) => _submit(),
-      suffixIcon: IconButton(
-        icon: Icon(
-          _obscurePassword
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          color: AppColors.textMuted,
-          size: 20,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        const Text(
+          'Password',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        onPressed: () =>
-            setState(() => _obscurePassword = !_obscurePassword),
-      ),
+
+        const SizedBox(height: 8),
+
+        AuthField(
+          controller: _passwordController,
+          focusNode: _passwordFocus,
+          label: 'Password',
+          hint: '••••••••',
+          icon: Icons.lock_outline_rounded,
+          obscureText: _obscurePassword,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _submit(),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
+            onPressed: () => setState(
+                  () => _obscurePassword = !_obscurePassword,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -264,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen>
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
-        onPressed: () {},
+        onPressed: () {}, // FIX FORGOT PASSWORD
         style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: Size.zero,
@@ -345,6 +410,7 @@ class _LoginScreenState extends State<LoginScreen>
       ],
     );
   }
+
   //----------------------------------------------------------------------------
   // temporary Social Buttons
 
@@ -369,6 +435,7 @@ class _LoginScreenState extends State<LoginScreen>
       ],
     );
   }
+
   //----------------------------------------------------------------------------
 
   Widget _buildRegisterRow() {
@@ -381,7 +448,15 @@ class _LoginScreenState extends State<LoginScreen>
             style: TextStyle(fontSize: 14, color: AppColors.textMuted),
           ),
           GestureDetector(
-            onTap: widget.onGoToRegister,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      RegisterScreen(onRegister: () {}, onGoToLogin: () {},),
+                ),
+              );
+            },
             child: const Text(
               'Sign up',
               style: TextStyle(
