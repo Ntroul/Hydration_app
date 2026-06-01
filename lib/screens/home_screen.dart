@@ -4,7 +4,6 @@ import '../models/reminder.dart';
 import '../theme/app_colors.dart';
 import '../widgets/quick_add_button.dart';
 import '../widgets/reminder_row.dart';
-import '../widgets/ring_painter.dart';
 
 import 'dart:math' as math;
 
@@ -64,24 +63,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ..reset()
       ..forward();
   }
+  void _resetWater() {
+    setState(() {
+      _consumed = 0;
+    });
+    _ringController
+      ..reset()
+      ..forward();
+  }
 
   Future<void> _loadProfile() async {
     final user = Supabase.instance.client.auth.currentUser;
-
-    if (user == null) {
-      print("NO USER LOGGED IN");
-      setState(() {
-        _name = "Not logged in";
-        _goal = 0;
-      });
-      return;
-    }
-
-    print("USER ID: ${user.id}");
-
     final profile = await _supabaseService.getProfile();
-
-    print("PROFILE: $profile");
 
     setState(() {
       _name = profile['name'] ?? 'No name';
@@ -105,9 +98,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 const SizedBox(height: 10),
                 _buildHeader(),
-                const SizedBox(height: 32),
-                _buildProgressRing(),
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
+                _buildPlantTank(),
+                const SizedBox(height: 28),
                 _buildQuickAdd(),
                 // const SizedBox(height: 28), // STREAK
                 // _buildStreakAndNext(),
@@ -133,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Good morning,',
+                'Welcome,',
                 style: TextStyle(
                   fontSize: 15,
                   color: AppColors.textMuted,
@@ -186,100 +179,127 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // Progress ring -----------------------------------------------
+  // PLANT & BAR  -----------------------------------------------
+  Widget _buildPlantTank() {
+    return AnimatedBuilder(
+      animation: _ringAnimation,
+      builder: (context, _) {
+        final progress = _progress * _ringAnimation.value;
 
-  Widget _buildProgressRing() {
-    return Center(
-      child: Column(
-        children: [
-          AnimatedBuilder(
-            animation: _ringAnimation,
-            builder: (context, _) {
-              final animatedProgress = _progress * _ringAnimation.value;
-              return SizedBox(
-                width: 220,
-                height: 220,
-                child: CustomPaint(
-                  painter: RingPainter(progress: animatedProgress),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryLight,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.water_drop_outlined,
-                            color: AppColors.primary,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text:
-                                '${(_consumed * _ringAnimation.value).round()}',
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text,
-                                  letterSpacing: -1,
-                                ),
-                              ),
-                              const TextSpan(
-                                text: ' ml',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'of ${_goal.round()} ml',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ],
+        return Container(
+          height: 280,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: Row(
+            children: [
+
+              // LEFT SIDE
+              Expanded(
+                child: Center(
+                  child: AnimatedScale(
+                    duration: const Duration(milliseconds: 500),
+                    scale: 0.9 + (_progress * 0.6),
+                    child: Image.asset(
+                      _plantAsset,
+                      height: 180,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
-              );
-            },
+              ),
+
+              const SizedBox(width: 20),
+
+              // RIGHT SIDE
+              SizedBox(
+                width: 90,
+                child: Column(
+                  children: [
+
+                    Text(
+                      '${_goal.round()} ml',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF212121),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+
+                          Container(
+                            width: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: AppColors.cardBorder,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeOut,
+                            width: 60,
+                            height: 180 * progress,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF212121),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
-          const SizedBox(height: 16),
-          // Row(
-          //   mainAxisSize: MainAxisSize.min,
-          //   children: [
-          //     _StatPill(
-          //       label: 'Consumed',
-          //       value: '${_consumed.round()} ml',
-          //       color: AppColors.primary,
-          //       icon: Icons.check_circle_outline,
-          //     ),
-          //     const SizedBox(width: 12),
-          //     _StatPill(
-          //       label: 'Remaining',
-          //       value: '${_remaining.round()} ml',
-          //       color: AppColors.textMuted,
-          //       icon: Icons.water_outlined,
-          //     ),
-          //   ],
-          // ),
-        ],
-      ),
+        );
+      },
     );
+  }
+  String get _plantAsset {
+    final progress = _progress;
+
+    if (progress < 0.20) {
+      return 'assets/plants/berry_1png.png';
+    }
+
+    if (progress < 0.40) {
+      return 'assets/plants/berry_2png.png';
+    }
+
+    if (progress < 0.60) {
+      return 'assets/plants/berry_3png.png';
+    }
+
+    if (progress < 0.80) {
+      return 'assets/plants/berry_4png.png';
+    }
+
+    return 'assets/plants/berry_5png.png';
   }
 
   //  Quick add -----------------------------------------------j
@@ -302,19 +322,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         Row(
           children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: QuickAddButton(
-                  icon: Icons.water_drop_outlined,
-                  amount: 250.0,
-                  label: 'Glass',
-                  onTap: () {
-                    _addWater(250.0);
-                  },
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: Padding(
+            //     padding: const EdgeInsets.only(right: 10),
+            //     child: QuickAddButton(
+            //       icon: Icons.water_drop_outlined,
+            //       amount: 250.0,
+            //       label: 'Glass',
+            //       onTap: () {
+            //         _addWater(250.0);
+            //       },
+            //     ),
+            //   ),
+            // ),
 
             Expanded(
               child: Padding(
@@ -357,6 +377,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
+            ElevatedButton(
+              onPressed: _resetWater,
+              child: const Text('Reset'),
+            )
           ],
         ),
       ],
