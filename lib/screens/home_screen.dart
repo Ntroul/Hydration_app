@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double>    _ringAnimation;
 
   double get _progress {
-    if (_goal == 0) return 0;
+    if (_goal <= 0) return 0.0;
     return (_consumed / _goal).clamp(0.0, 1.0);
   }
   double get _remaining => math.max(0, _goal - _consumed);
@@ -179,15 +179,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // PLANT & BAR  -----------------------------------------------
+  // plant and bar
   Widget _buildPlantTank() {
     return AnimatedBuilder(
       animation: _ringAnimation,
       builder: (context, _) {
-        final progress = _progress * _ringAnimation.value;
+        final progress = _progress;
 
         return Container(
-          height: 280,
+          height: 300,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -197,12 +197,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Row(
             children: [
 
-              // LEFT SIDE
+              // tree
               Expanded(
                 child: Center(
                   child: AnimatedScale(
                     duration: const Duration(milliseconds: 500),
-                    scale: 0.9 + (_progress * 0.6),
+                    scale: 0.5 + (_progress * 0.6),
                     child: Image.asset(
                       _plantAsset,
                       height: 180,
@@ -214,61 +214,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
               const SizedBox(width: 20),
 
-              // RIGHT SIDE
+              // tank
               SizedBox(
-                width: 90,
-                child: Column(
+                width: 80,
+                height: 220,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
                   children: [
 
-                    Text(
-                      '${_goal.round()} ml',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Expanded(
-                      child: Stack(
-                        alignment: Alignment.bottomCenter,
-                        children: [
-
-                          Container(
-                            width: 60,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: AppColors.cardBorder,
-                                width: 2,
+                    // water
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: SizedBox(
+                        width: 80,
+                        height: 220,
+                        child: Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: 220 * _progress,
+                              child: Image.asset(
+                                'assets/tank/water.jpg',
+                                fit: BoxFit.cover,
                               ),
                             ),
-                          ),
-
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.easeOut,
-                            width: 60,
-                            height: 180 * progress,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 8),
-
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
+                    // tank frame
+                    Container(
+                      width: 80,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 3,
+                        ),
                       ),
                     ),
                   ],
@@ -284,25 +271,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final progress = _progress;
 
     if (progress < 0.20) {
-      return 'assets/plants/berry_1png.png';
+      return 'assets/plants/tree.jpeg';
     }
 
     if (progress < 0.40) {
-      return 'assets/plants/berry_2png.png';
+      return 'assets/plants/tree1.jpeg';
     }
 
     if (progress < 0.60) {
-      return 'assets/plants/berry_3png.png';
+      return 'assets/plants/tree2.jpeg';
     }
 
     if (progress < 0.80) {
-      return 'assets/plants/berry_4png.png';
+      return 'assets/plants/tree3.jpeg';
     }
-
-    return 'assets/plants/berry_5png.png';
+    return 'assets/plants/tree4.jpeg';
   }
 
-  //  Quick add -----------------------------------------------j
+  //  Quick add -----------------------------------------------
 
   Widget _buildQuickAdd() {
     return Column(
@@ -322,61 +308,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         Row(
           children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: QuickAddButton(
+                  icon: Icons.water_drop_outlined,
+                  amount: 250.0,
+                  label: 'Glass',
+                  onTap: () {
+                    _addWater(250.0);
+                  },
+                ),
+              ),
+            ),
+
             // Expanded(
             //   child: Padding(
             //     padding: const EdgeInsets.only(right: 10),
             //     child: QuickAddButton(
-            //       icon: Icons.water_drop_outlined,
-            //       amount: 250.0,
-            //       label: 'Glass',
+            //       icon: Icons.sports_bar_outlined,
+            //       amount: 500.0,
+            //       label: 'Bottle',
             //       onTap: () {
-            //         _addWater(250.0);
+            //         _addWater(500.0);
             //       },
             //     ),
             //   ),
             // ),
 
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: QuickAddButton(
-                  icon: Icons.sports_bar_outlined,
-                  amount: 500.0,
-                  label: 'Bottle',
-                  onTap: () {
-                    _addWater(500.0);
-                  },
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: Padding(
+            //     padding: const EdgeInsets.only(right: 10),
+            //     child: QuickAddButton(
+            //       icon: Icons.local_drink_outlined,
+            //       amount: 750.0,
+            //       label: 'Large bottle',
+            //       onTap: () {
+            //         _addWater(750.0);
+            //       },
+            //     ),
+            //   ),
+            // ),
 
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: QuickAddButton(
-                  icon: Icons.local_drink_outlined,
-                  amount: 750.0,
-                  label: 'Large bottle',
-                  onTap: () {
-                    _addWater(750.0);
-                  },
-                ),
-              ),
-            ),
-
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: QuickAddButton(
-                  icon: Icons.water_drop_rounded,
-                  amount: 0,
-                  label: 'Custom Bottle',
-                  onTap: () {
-                    _addWater(0);
-                  },
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: Padding(
+            //     padding: const EdgeInsets.only(right: 10),
+            //     child: QuickAddButton(
+            //       icon: Icons.water_drop_rounded,
+            //       amount: 0,
+            //       label: 'Custom Bottle',
+            //       onTap: () {
+            //         _addWater(0);
+            //       },
+            //     ),
+            //   ),
+            // ),
             ElevatedButton(
               onPressed: _resetWater,
               child: const Text('Reset'),
