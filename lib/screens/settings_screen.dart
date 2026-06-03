@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryMid.withOpacity(0.4)),
+        border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
@@ -101,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.water_drop,
@@ -207,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeTrackColor: AppColors.primary,
                     inactiveTrackColor: AppColors.ringTrack,
                     thumbColor: AppColors.primary,
-                    overlayColor: AppColors.primary.withOpacity(0.1),
+                    overlayColor: AppColors.primary.withValues(alpha: 0.1),
                     trackHeight: 3,
                     thumbShape:
                     const RoundSliderThumbShape(enabledThumbRadius: 7),

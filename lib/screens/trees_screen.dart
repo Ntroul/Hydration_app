@@ -12,17 +12,11 @@ class TreesScreen extends StatefulWidget {
 class TreesScreenState extends State<TreesScreen> {
   @override
   Widget build(BuildContext context) {
-    
+
     return Scaffold(
-      body: Center(
-        child: GestureDetector(
-           onTap: (){
-             Navigator.push(context,
-                 MaterialPageRoute(builder: (_) => HomeScreen())
-             );
-           },
-          child: const Text('Trees Screen'),
-        ),
+      appBar: AppBar(),
+      body: const Center(
+        child: Text('Trees Screen'),
       ),
     );
   }

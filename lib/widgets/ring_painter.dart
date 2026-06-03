@@ -36,7 +36,7 @@ class RingPainter extends CustomPainter {
       sweepAngle,
       false,
       Paint()
-        ..color = AppColors.primary.withOpacity(0.15)
+        ..color = AppColors.primary.withValues(alpha: 0.15)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth + 6
         ..strokeCap = StrokeCap.round,

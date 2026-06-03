@@ -213,7 +213,7 @@ class HistoryScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryMid.withOpacity(0.4)),
+        border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,7 +222,7 @@ class HistoryScreen extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.lightbulb_outline,
