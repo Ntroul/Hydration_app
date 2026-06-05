@@ -336,7 +336,51 @@ class _LoginScreenState extends State<LoginScreen>
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
-        onPressed: () {},
+        onPressed: () async {
+          final emailController = TextEditingController();
+
+          await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Reset password'),
+                content: TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your email',
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      final email = emailController.text.trim();
+
+                      await Supabase.instance.client.auth.resetPasswordForEmail(
+                        email,
+                        redirectTo: 'myapp://reset-password',
+                      );
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Password reset email sent'),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Send'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
         style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: Size.zero,
