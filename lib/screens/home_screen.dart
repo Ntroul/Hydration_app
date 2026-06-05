@@ -282,12 +282,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(26),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.easeOutCubic,
+                    child: SizedBox(
                       width: 52,
-                      height: math.max(0, 176 * _progress),
-                      color: _progressColor.withValues(alpha: 0.65),
+                      height: 176,
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: 176 * _progress,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: _progressColor.withValues(alpha: 0.65),
+                                borderRadius: BorderRadius.circular(26),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(

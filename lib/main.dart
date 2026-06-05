@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hydration_app/screens/sign_up_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
@@ -46,7 +47,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class _RootRouter extends StatefulWidget {
   const _RootRouter();
 
@@ -55,37 +55,81 @@ class _RootRouter extends StatefulWidget {
 }
 
 class _RootRouterState extends State<_RootRouter> {
-  bool _loggedIn = false;
+  String _screen = 'login';
 
-  void _onLogin() => setState(() => _loggedIn = true);
-  void _onGoToRegister() => setState(() => _loggedIn = true);
+  Future<void> _onLogin() async {
+    setState(() => _screen = 'loading');
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        setState(() => _screen = 'login');
+        return;
+      }
+
+      final existing = await Supabase.instance.client
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (existing != null) {
+        _profile.skipOnboarding();
+        setState(() => _screen = 'app');
+      } else {
+        setState(() => _screen = 'onboarding');
+      }
+    } catch (_) {
+      setState(() => _screen = 'onboarding');
+    }
+  }
+
+  void _onGoToRegister() => setState(() => _screen = 'register');
+
+  void _onRegister()     => setState(() => _screen = 'onboarding');
+  void _onBackToLogin()  => setState(() => _screen = 'login');
 
   @override
   Widget build(BuildContext context) {
-    if (!_loggedIn) {
-      return LoginScreen(
-        onLogin:        _onLogin,
-        onGoToRegister: _onGoToRegister,
-      );
-    }
-    return ListenableBuilder(
-      listenable: _profile,
-      builder: (context, _) {
-        if (!_profile.onboarded) {
-          return OnboardingScreen(
-            profile:    _profile,
-            onComplete: () {},
-          );
-        }
+    switch (_screen) {
+      case 'login':
+        return LoginScreen(
+          onLogin:        _onLogin,
+          onGoToRegister: _onGoToRegister,
+        );
 
+      case 'register':
+        return RegisterScreen(
+          onRegister:  _onRegister,
+          onGoToLogin: _onBackToLogin,
+        );
+
+      case 'loading':
+        return const Scaffold(
+          backgroundColor: AppColors.background,
+          body: Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+        );
+
+      case 'onboarding':
+        return ListenableBuilder(
+          listenable: _profile,
+          builder: (context, _) {
+            if (_profile.onboarded) return AppShell(profile: _profile);
+            return OnboardingScreen(
+              profile:    _profile,
+              onComplete: () {},
+            );
+          },
+        );
+
+      default: // 'app'
         return AppShell(profile: _profile);
-      },
-    );
+    }
   }
 }
 
 class AppShell extends StatefulWidget {
-
   final UserProfile profile;
   const AppShell({super.key, required this.profile});
 
@@ -105,6 +149,7 @@ class _AppShellState extends State<AppShell> {
     ];
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,

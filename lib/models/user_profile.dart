@@ -28,6 +28,11 @@ class UserProfile extends ChangeNotifier {
     notifyListeners();
   }
 
+  void skipOnboarding() {
+    _onboarded = true;
+    notifyListeners();
+  }
+
   void updateName(String v)     { _name     = v; notifyListeners(); }
   void updateAge(int v)         { _age      = v; notifyListeners(); }
   void updateWeight(double v)   { _weightKg = v; notifyListeners(); }

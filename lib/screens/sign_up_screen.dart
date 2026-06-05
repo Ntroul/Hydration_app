@@ -4,7 +4,6 @@ import 'package:hydration_app/screens/login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/app_colors.dart';
 
-
 class RegisterScreen extends StatefulWidget {
   final VoidCallback onRegister;
   final VoidCallback onGoToLogin;
@@ -21,32 +20,30 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen>
     with TickerProviderStateMixin {
-  // Controllers
+
   final _nameController     = TextEditingController();
   final _emailController    = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController  = TextEditingController();
 
-  // Focus nodes
-  final _nameFocus    = FocusNode();
-  final _emailFocus   = FocusNode();
+  final _nameFocus     = FocusNode();
+  final _emailFocus    = FocusNode();
   final _passwordFocus = FocusNode();
-  final _confirmFocus = FocusNode();
+  final _confirmFocus  = FocusNode();
 
   bool _obscurePassword = true;
   bool _obscureConfirm  = true;
   bool _isLoading       = false;
   bool _agreedToTerms   = false;
 
-  // Password strength
   double get _passwordStrength {
     final p = _passwordController.text;
     if (p.isEmpty) return 0;
     double score = 0;
-    if (p.length >= 8)                          score += 0.25;
-    if (p.contains(RegExp(r'[A-Z]')))           score += 0.25;
-    if (p.contains(RegExp(r'[0-9]')))           score += 0.25;
-    if (p.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) score += 0.25;
+    if (p.length >= 8)                                           score += 0.25;
+    if (p.contains(RegExp(r'[A-Z]')))                           score += 0.25;
+    if (p.contains(RegExp(r'[0-9]')))                           score += 0.25;
+    if (p.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]')))        score += 0.25;
     return score;
   }
 
@@ -67,7 +64,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     return 'Strong';
   }
 
-  // Entry animation
   late AnimationController _entryController;
   late Animation<double>   _fadeAnim;
   late Animation<Offset>   _slideAnim;
@@ -89,7 +85,6 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     _entryController.forward();
 
-    // Rebuild on password change to update strength indicator
     _passwordController.addListener(() => setState(() {}));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,21 +106,19 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
-  // ─── Validation ───────────────────────────────────────────────────────────
-
   String? _validate() {
     final name     = _nameController.text;
     final email    = _emailController.text;
     final password = _passwordController.text;
     final confirm  = _confirmController.text;
 
-    if (name.isEmpty)             return 'Please enter your full name';
-    if (name.length < 2)          return 'Name is too short';
-    if (email.isEmpty)            return 'Please enter your email';
-    if (!email.contains('@'))     return 'Enter a valid email address';
-    if (password.length < 6)      return 'Password must be at least 6 characters';
-    if (password != confirm)      return 'Passwords do not match';
-    if (!_agreedToTerms)          return 'Please agree to the Terms & Privacy Policy';
+    if (name.isEmpty)         return 'Please enter your full name';
+    if (name.length < 2)      return 'Name is too short';
+    if (email.isEmpty)        return 'Please enter your email';
+    if (!email.contains('@')) return 'Enter a valid email address';
+    if (password.length < 6)  return 'Password must be at least 6 characters';
+    if (password != confirm)  return 'Passwords do not match';
+    if (!_agreedToTerms)      return 'Please agree to the Terms & Privacy Policy';
     return null;
   }
 
@@ -173,165 +166,193 @@ class _RegisterScreenState extends State<RegisterScreen>
     }
   }
 
-  // ─── Build ────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-
-          child: FadeTransition(
-            opacity: _fadeAnim,
-            child: SlideTransition(
-              position: _slideAnim,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: AppColors.cardBorder,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 32),
-                    _buildLogo(),
-                    const SizedBox(height: 28),
-                    _buildHeading(),
-                    const SizedBox(height: 32),
-                    _buildNameField(),
-                    const SizedBox(height: 14),
-                    _buildEmailField(),
-                    const SizedBox(height: 14),
-                    _buildPasswordField(),
-
-                    if (_passwordController.text.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      _buildStrengthBar(),
+      body: Column(
+        children: [
+          _buildTopBanner(),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 28),
+                      _buildCard(),
+                      const SizedBox(height: 24),
                     ],
-
-                    const SizedBox(height: 14),
-                    _buildConfirmField(),
-                    const SizedBox(height: 20),
-                    _buildTermsRow(),
-                    const SizedBox(height: 28),
-                    _buildRegisterButton(),
-                    const SizedBox(height: 24),
-                    _buildDivider(),
-                    const SizedBox(height: 24),
-                    _buildSocialButtons(),
-                    const SizedBox(height: 36),
-                    _buildLoginRow(),
-                    const SizedBox(height: 24),
-                  ],
-
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      )
+        ],
+      ),
     );
   }
 
-  Widget _buildLogo() {
-    return Row(
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(Icons.water_drop,
-              color: AppColors.primary, size: 28),
+  Widget _buildTopBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 56, 24, 36),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1D9E75),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(36),
+          bottomRight: Radius.circular(36),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Hydration',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.text,
-                letterSpacing: -0.3,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.35), width: 1),
+                  ),
+                  child: const Icon(Icons.arrow_back_ios_new,
+                      color: Colors.white, size: 15),
+                ),
               ),
+              const SizedBox(width: 12),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35), width: 1),
+                ),
+                child: const Icon(Icons.water_drop,
+                    color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 10),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Hydration',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      )),
+                  Text('Coach',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white70,
+                      )),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'Create your account',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.8,
+              height: 1.1,
             ),
-            Text(
-              'Coach',
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              'Start building your hydration habit today',
               style: TextStyle(
                 fontSize: 13,
+                color: Colors.white,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textMuted,
-                letterSpacing: 0.2,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildNameField(),
+          const SizedBox(height: 14),
+          _buildEmailField(),
+          const SizedBox(height: 14),
+          _buildPasswordField(),
+          if (_passwordController.text.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _buildStrengthBar(),
           ],
-        ),
-      ],
+          const SizedBox(height: 14),
+          _buildConfirmField(),
+          const SizedBox(height: 20),
+          _buildTermsRow(),
+          const SizedBox(height: 28),
+          _buildRegisterButton(),
+          const SizedBox(height: 24),
+          _buildDivider(),
+          const SizedBox(height: 24),
+          _buildSocialButtons(),
+          const SizedBox(height: 32),
+          _buildLoginRow(),
+        ],
+      ),
     );
   }
-
-  // ─── Heading ──────────────────────────────────────────────────────────────
-
-  Widget _buildHeading() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
-          'Create your account',
-          style: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.w600,
-            color: AppColors.text,
-            letterSpacing: -0.8,
-            height: 1.15,
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Start building your hydration habit today',
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.textMuted,
-            height: 1.4,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ─── Fields ───────────────────────────────────────────────────────────────
 
   Widget _buildNameField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Email',
+          'Full name',
           style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text,
           ),
         ),
+        const SizedBox(height: 8),
         _AuthField(
           controller:      _nameController,
           focusNode:       _nameFocus,
@@ -343,23 +364,36 @@ class _RegisterScreenState extends State<RegisterScreen>
           textInputAction: TextInputAction.next,
           onSubmitted:     (_) =>
               FocusScope.of(context).requestFocus(_emailFocus),
-
         ),
-      ]
+      ],
     );
   }
 
   Widget _buildEmailField() {
-    return _AuthField(
-      controller:      _emailController,
-      focusNode:       _emailFocus,
-      label:           'Email address',
-      hint:            'you@example.com',
-      icon:            Icons.mail_outline_rounded,
-      inputType:       TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      onSubmitted:     (_) =>
-          FocusScope.of(context).requestFocus(_passwordFocus),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Email',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _AuthField(
+          controller:      _emailController,
+          focusNode:       _emailFocus,
+          label:           'Email address',
+          hint:            'you@example.com',
+          icon:            Icons.mail_outline_rounded,
+          inputType:       TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          onSubmitted:     (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocus),
+        ),
+      ],
     );
   }
 
@@ -370,10 +404,12 @@ class _RegisterScreenState extends State<RegisterScreen>
         const Text(
           'Password',
           style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text,
           ),
         ),
+        const SizedBox(height: 8),
         _AuthField(
           controller:      _passwordController,
           focusNode:       _passwordFocus,
@@ -396,46 +432,57 @@ class _RegisterScreenState extends State<RegisterScreen>
                 setState(() => _obscurePassword = !_obscurePassword),
           ),
         ),
-      ]
+      ],
     );
   }
 
   Widget _buildConfirmField() {
-    // Shows a checkmark when passwords match
     final match = _confirmController.text.isNotEmpty &&
         _confirmController.text == _passwordController.text;
 
-    return _AuthField(
-      controller:      _confirmController,
-      focusNode:       _confirmFocus,
-      label:           'Confirm password',
-      hint:            '••••••••',
-      icon:            Icons.lock_outline_rounded,
-      obscureText:     _obscureConfirm,
-      textInputAction: TextInputAction.done,
-      onSubmitted:     (_) => _submit(),
-      onChanged:       (_) => setState(() {}),
-      suffixIcon: match
-          ? const Padding(
-        padding: EdgeInsets.only(right: 4),
-        child: Icon(Icons.check_circle_outline,
-            color: AppColors.successGreen, size: 20),
-      )
-          : IconButton(
-        icon: Icon(
-          _obscureConfirm
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          color: AppColors.textMuted,
-          size: 20,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Confirm password',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text,
+          ),
         ),
-        onPressed: () =>
-            setState(() => _obscureConfirm = !_obscureConfirm),
-      ),
+        const SizedBox(height: 8),
+        _AuthField(
+          controller:      _confirmController,
+          focusNode:       _confirmFocus,
+          label:           'Confirm password',
+          hint:            '••••••••',
+          icon:            Icons.lock_outline_rounded,
+          obscureText:     _obscureConfirm,
+          textInputAction: TextInputAction.done,
+          onSubmitted:     (_) => _submit(),
+          onChanged:       (_) => setState(() {}),
+          suffixIcon: match
+              ? const Padding(
+            padding: EdgeInsets.only(right: 4),
+            child: Icon(Icons.check_circle_outline,
+                color: AppColors.successGreen, size: 20),
+          )
+              : IconButton(
+            icon: Icon(
+              _obscureConfirm
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
+            onPressed: () =>
+                setState(() => _obscureConfirm = !_obscureConfirm),
+          ),
+        ),
+      ],
     );
   }
-
-  // ─── Password strength bar ────────────────────────────────────────────────
 
   Widget _buildStrengthBar() {
     return Column(
@@ -447,8 +494,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             value: _passwordStrength,
             minHeight: 4,
             backgroundColor: AppColors.ringTrack,
-            valueColor:
-            AlwaysStoppedAnimation<Color>(_strengthColor),
+            valueColor: AlwaysStoppedAnimation<Color>(_strengthColor),
           ),
         ),
         const SizedBox(height: 4),
@@ -456,8 +502,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           children: [
             const Text(
               'Password strength: ',
-              style: TextStyle(
-                  fontSize: 11, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
             Text(
               _strengthLabel,
@@ -473,8 +518,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ─── Terms checkbox ───────────────────────────────────────────────────────
-
   Widget _buildTermsRow() {
     return GestureDetector(
       onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
@@ -486,9 +529,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             width: 22,
             height: 22,
             decoration: BoxDecoration(
-              color: _agreedToTerms
-                  ? AppColors.primary
-                  : AppColors.surface,
+              color: _agreedToTerms ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: _agreedToTerms
@@ -498,8 +539,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
             child: _agreedToTerms
-                ? const Icon(Icons.check,
-                color: Colors.white, size: 14)
+                ? const Icon(Icons.check, color: Colors.white, size: 14)
                 : null,
           ),
           const SizedBox(width: 10),
@@ -507,22 +547,20 @@ class _RegisterScreenState extends State<RegisterScreen>
             child: RichText(
               text: TextSpan(
                 style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textMuted,
-                    height: 1.4),
+                    fontSize: 13, color: AppColors.textMuted, height: 1.4),
                 children: [
                   const TextSpan(text: 'I agree to the '),
-                  TextSpan(
+                  const TextSpan(
                     text: 'Terms of Service',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const TextSpan(text: ' and '),
-                  TextSpan(
+                  const TextSpan(
                     text: 'Privacy Policy',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w500,
                     ),
@@ -536,8 +574,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ─── Register button ──────────────────────────────────────────────────────
-
   Widget _buildRegisterButton() {
     return SizedBox(
       width: double.infinity,
@@ -547,11 +583,11 @@ class _RegisterScreenState extends State<RegisterScreen>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: const Color(0xFF1D9E75),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.32),
+                color: const Color(0xFF1D9E75).withValues(alpha: 0.32),
                 blurRadius: 18,
                 offset: const Offset(0, 7),
               ),
@@ -582,14 +618,11 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ─── Divider ──────────────────────────────────────────────────────────────
-
   Widget _buildDivider() {
     return Row(
       children: [
         Expanded(
-            child:
-            Divider(thickness: 0.5, color: AppColors.cardBorder)),
+            child: Divider(thickness: 0.5, color: AppColors.cardBorder)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
@@ -600,13 +633,10 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
         ),
         Expanded(
-            child:
-            Divider(thickness: 0.5, color: AppColors.cardBorder)),
+            child: Divider(thickness: 0.5, color: AppColors.cardBorder)),
       ],
     );
   }
-
-  // ─── Social buttons ───────────────────────────────────────────────────────
 
   Widget _buildSocialButtons() {
     return Row(
@@ -637,22 +667,21 @@ class _RegisterScreenState extends State<RegisterScreen>
         children: [
           const Text(
             'Already have an account? ',
-            style:
-            TextStyle(fontSize: 14, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 14, color: AppColors.textMuted),
           ),
           GestureDetector(
             onTap: () {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => LoginScreen(onLogin: () {}, onGoToRegister: () {}))
-              );
+                      builder: (_) => LoginScreen(
+                          onLogin: () {}, onGoToRegister: () {})));
             },
             child: const Text(
               'Sign in',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.primary,
+                color: Color(0xFF1D9E75),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -662,8 +691,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 }
-
-// ─── Reusable auth text field ─────────────────────────────────────────────────
 
 class _AuthField extends StatelessWidget {
   final TextEditingController     controller;
@@ -699,15 +726,15 @@ class _AuthField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller:          controller,
-      focusNode:           focusNode,
-      keyboardType:        inputType,
-      obscureText:         obscureText,
-      textInputAction:     textInputAction,
-      textCapitalization:  capitalization,
-      inputFormatters:     inputFormatters,
-      onSubmitted:         onSubmitted,
-      onChanged:           onChanged,
+      controller:         controller,
+      focusNode:          focusNode,
+      keyboardType:       inputType,
+      obscureText:        obscureText,
+      textInputAction:    textInputAction,
+      textCapitalization: capitalization,
+      inputFormatters:    inputFormatters,
+      onSubmitted:        onSubmitted,
+      onChanged:          onChanged,
       style: const TextStyle(
         fontSize: 15,
         color: AppColors.text,
@@ -718,35 +745,29 @@ class _AuthField extends StatelessWidget {
         hintText:   hint,
         prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
         suffixIcon: suffixIcon,
-        labelStyle: const TextStyle(
-            color: AppColors.textMuted, fontSize: 14),
-        hintStyle: const TextStyle(
-            color: AppColors.textLight, fontSize: 15),
-        filled:      true,
-        fillColor:   AppColors.surface,
+        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        hintStyle:  const TextStyle(color: AppColors.textLight, fontSize: 15),
+        filled:     true,
+        fillColor:  AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 16, vertical: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-          const BorderSide(color: AppColors.cardBorder),
+          borderSide: const BorderSide(color: AppColors.cardBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-          const BorderSide(color: AppColors.cardBorder),
+          borderSide: const BorderSide(color: AppColors.cardBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(
-              color: AppColors.primary, width: 2),
+              color: Color(0xFF1D9E75), width: 2),
         ),
       ),
     );
   }
 }
-
-// ─── Social sign-in button ────────────────────────────────────────────────────
 
 class _SocialButton extends StatelessWidget {
   final String       label;
