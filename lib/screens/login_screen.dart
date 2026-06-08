@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hydration_app/screens/sign_up_screen.dart';
 import '../theme/app_colors.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/social_button.dart';
 import '../widgets/auth_field.dart';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLogin;
@@ -73,6 +74,14 @@ class _LoginScreenState extends State<LoginScreen>
     }
     return null;
   }
+
+  Future<void> signInWithGoogle() async {
+    await Supabase.instance.client.auth.signInWithOAuth(
+      OAuthProvider.google,
+    );
+  }
+
+
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
@@ -469,17 +478,17 @@ class _LoginScreenState extends State<LoginScreen>
           child: SocialButton(
             label: 'Google',
             icon: Icons.g_mobiledata_rounded,
-            onTap: widget.onLogin,
+            onTap: signInWithGoogle,
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: SocialButton(
-            label: 'Apple',
-            icon: Icons.apple_rounded,
-            onTap: widget.onLogin,
-          ),
-        ),
+        // Expanded(
+        //   child: SocialButton(
+        //     label: 'Apple',
+        //     icon: Icons.apple_rounded,
+        //     onTap: widget.onLogin,
+        //   ),
+        // ),
       ],
     );
   }

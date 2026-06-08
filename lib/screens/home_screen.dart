@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hydration_app/screens/trees_screen.dart';
 import '../models/reminder.dart';
+import '../services/notification_services.dart';
 import '../theme/app_colors.dart';
 import '../widgets/reminder_row.dart';
 
@@ -415,6 +416,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             const Spacer(),
+            //--------temp button
+            ElevatedButton(
+            onPressed: () async {
+              await NotificationService.showTestNotification();
+            },
+            child: const Text("TEST"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await NotificationService.scheduleReminder(
+                  id: 1,
+                  minutes: 1,
+                );
+              },
+              child: const Text("1min"),
+            ),
+            //-----------
             GestureDetector(
               onTap: _resetWater,
               child: Container(

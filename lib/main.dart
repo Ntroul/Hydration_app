@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hydration_app/screens/sign_up_screen.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
@@ -7,6 +8,8 @@ import 'widgets/custom_bottom_nav.dart';
 import 'theme/app_colors.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hydration_app/services/notification_services.dart';
 
 import 'models/user_profile.dart';
 import 'screens/login_screen.dart';
@@ -19,6 +22,15 @@ Future<void> main() async {
     url: 'https://gysjshfvkbocjmhfgawp.supabase.co/',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c2pzaGZ2a2JvY2ptaGZnYXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4ODQxMjUsImV4cCI6MjA5NTQ2MDEyNX0.VgGcuinb0nMQlR8gp-qskzIxSmuUB-CnmX4TvXcJq_Q',
   );
+
+  await NotificationService.init();
+
+  final plugin = FlutterLocalNotificationsPlugin();
+
+  final android = plugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>();
+
+  await android?.requestNotificationsPermission();
 
   runApp(const MyApp());
 }
@@ -161,3 +173,4 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
+
