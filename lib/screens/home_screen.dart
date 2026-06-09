@@ -423,6 +423,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
             child: const Text("TEST"),
             ),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     final pending =
+            //     await NotificationService.getPendingNotifications();
+            //
+            //     print("Pending count: ${pending.length}");
+            //
+            //     for (final p in pending) {
+            //       print("ID: ${p.id}");
+            //       print("Title: ${p.title}");
+            //     }
+            //   },
+            //   child: const Text("Check"),
+            // ),
             ElevatedButton(
               onPressed: () async {
                 await NotificationService.scheduleReminder(
