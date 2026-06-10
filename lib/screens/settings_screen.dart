@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
+import '../services/notification_services.dart';
 import '../theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -12,12 +13,17 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _smartReminders = true;
-  bool _quietHours     = true;
-  bool _workoutNudge   = false;
-  bool _weatherGoal    = true;
-  bool _wristVibration = false;
-  bool _healthConnect  = true;
+  bool _notificationsEnabled = true;
+
+  int _reminderMinutes = 60;
+
+  TimeOfDay _wakeTime =
+  const TimeOfDay(hour: 8, minute: 0);
+
+  TimeOfDay _sleepTime =
+  const TimeOfDay(hour: 22, minute: 0);
+
+  // bool _healthConnect = false;
 
   int _activityLevel = 1; // 0 = low, 1 = moderate, 2 = high
 
@@ -66,9 +72,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 24),
                     _buildSectionLabel('Reminders'),
                     _buildRemindersCard(),
-                    const SizedBox(height: 24),
-                    _buildSectionLabel('Integrations'),
-                    _buildIntegrationsCard(),
+
+                    // const SizedBox(height: 24),
+                    // _buildSectionLabel('Integrations'),
+                    // _buildIntegrationsCard(),
+
                     const SizedBox(height: 24),
                     _buildSectionLabel('Display'),
                     _buildDisplayCard(),
@@ -317,44 +325,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Column(
         children: [
+
+          // Enable reminders
           _ToggleRow(
-            icon: Icons.access_time_outlined,
-            title: 'Smart reminders',
-            subtitle: 'Every 90 min, 7 AM – 10 PM',
-            value: _smartReminders,
-            onChanged: (v) => setState(() => _smartReminders = v),
+            icon: Icons.notifications_active_outlined,
+            title: 'Enable reminders',
+            subtitle: 'Receive hydration notifications',
+            value: _notificationsEnabled,
+            onChanged: (v) {
+              setState(() {
+                _notificationsEnabled = v;
+              });
+            },
           ),
+
           _divider(),
-          _ToggleRow(
-            icon: Icons.bedtime_outlined,
-            title: 'Quiet hours',
-            subtitle: '10 PM – 7 AM — no notifications',
-            value: _quietHours,
-            onChanged: (v) => setState(() => _quietHours = v),
+
+          // Frequency
+          _SettingsRow(
+            icon: Icons.schedule,
+            title: 'Reminder frequency',
+            trailing: DropdownButton<int>(
+              value: _reminderMinutes,
+              underline: const SizedBox(),
+              items: const [
+                DropdownMenuItem(
+                  value: 30,
+                  child: Text('30 min'),
+                ),
+                DropdownMenuItem(
+                  value: 60,
+                  child: Text('1 hour'),
+                ),
+                DropdownMenuItem(
+                  value: 120,
+                  child: Text('2 hours'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value == null) return;
+
+                setState(() {
+                  _reminderMinutes = value;
+                });
+              },
+            ),
           ),
+
           _divider(),
-          _ToggleRow(
-            icon: Icons.fitness_center_outlined,
-            title: 'Post-workout nudge',
-            subtitle: '+400 ml reminder after activity',
-            value: _workoutNudge,
-            onChanged: (v) => setState(() => _workoutNudge = v),
-          ),
-          _divider(),
-          _ToggleRow(
+
+          // Wake time
+          _SettingsRow(
             icon: Icons.wb_sunny_outlined,
-            title: 'Weather-based goal',
-            subtitle: 'Raises target on hot days',
-            value: _weatherGoal,
-            onChanged: (v) => setState(() => _weatherGoal = v),
+            title: 'Wake time',
+            trailing: TextButton(
+              onPressed: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: _wakeTime,
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    _wakeTime = picked;
+                  });
+                }
+              },
+              child: Text(
+                _wakeTime.format(context),
+              ),
+            ),
           ),
+
           _divider(),
-          _ToggleRow(
-            icon: Icons.watch_outlined,
-            title: 'Wrist vibration only',
-            subtitle: 'Silent alerts on Wear OS',
-            value: _wristVibration,
-            onChanged: (v) => setState(() => _wristVibration = v),
+
+          // Sleep time
+          _SettingsRow(
+            icon: Icons.bedtime_outlined,
+            title: 'Sleep time',
+            trailing: TextButton(
+              onPressed: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: _sleepTime,
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    _sleepTime = picked;
+                  });
+                }
+              },
+              child: Text(
+                _sleepTime.format(context),
+              ),
+            ),
+          ),
+
+          _divider(),
+
+          // Test notification
+          _SettingsRow(
+            icon: Icons.notifications,
+            title: 'Test notification',
+            trailing: ElevatedButton(
+              onPressed: () {
+                NotificationService.showTestNotification();
+              },
+              child: const Text('Test'),
+            ),
           ),
         ],
       ),
@@ -363,48 +442,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // ─── Integrations ─────────────────────────────────────────────────────────
 
-  Widget _buildIntegrationsCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        children: [
-          _ToggleRow(
-            icon: Icons.favorite_border,
-            title: 'Health Connect',
-            subtitle: 'Sync with Android Health',
-            value: _healthConnect,
-            onChanged: (v) => setState(() => _healthConnect = v),
-          ),
-          _divider(),
-          _SettingsRow(
-            icon: Icons.watch_outlined,
-            title: 'Wear OS',
-            trailing: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.ringTrack,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Not connected',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildIntegrationsCard() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.surface,
+  //       borderRadius: BorderRadius.circular(16),
+  //       border: Border.all(color: AppColors.cardBorder),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         _ToggleRow(
+  //           icon: Icons.favorite_border,
+  //           title: 'Health Connect',
+  //           subtitle: 'Sync with Android Health',
+  //           value: _healthConnect,
+  //           onChanged: (v) => setState(() => _healthConnect = v),
+  //         ),
+  //         _divider(),
+  //         _SettingsRow(
+  //           icon: Icons.watch_outlined,
+  //           title: 'Wear OS',
+  //           trailing: Container(
+  //             padding:
+  //             const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  //             decoration: BoxDecoration(
+  //               color: AppColors.ringTrack,
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             child: const Text(
+  //               'Not connected',
+  //               style: TextStyle(
+  //                 fontSize: 11,
+  //                 color: AppColors.textMuted,
+  //                 fontWeight: FontWeight.w500,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // ─── Display ──────────────────────────────────────────────────────────────
 

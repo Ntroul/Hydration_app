@@ -417,12 +417,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const Spacer(),
             //--------temp button
-            ElevatedButton(
-            onPressed: () async {
-              await NotificationService.showTestNotification();
-            },
-            child: const Text("TEST"),
-            ),
+            // ElevatedButton(
+            // onPressed: () async {
+            //   await NotificationService.showTestNotification();
+            // },
+            // child: const Text("TEST"),
+            // ),
             // ElevatedButton(
             //   onPressed: () async {
             //     final pending =
