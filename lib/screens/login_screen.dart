@@ -367,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                   TextButton(
                     onPressed: () async {
-                      final email = emailController.text.trim();
+                      final email = emailController.text;
 
                       await Supabase.instance.client.auth.resetPasswordForEmail(
                         email,

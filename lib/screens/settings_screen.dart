@@ -136,10 +136,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   letterSpacing: -0.5,
                 ),
               ),
-              const Text(
-                'Adjusted for Athens heat · 34°C',
-                style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-              ),
+              // const Text(
+              //   'Adjusted for Athens heat · 34°C',
+              //   style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+              // ),
             ],
           ),
         ],

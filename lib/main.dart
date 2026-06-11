@@ -71,23 +71,36 @@ class _RootRouterState extends State<_RootRouter> {
 
   Future<void> _onLogin() async {
     setState(() => _screen = 'loading');
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        setState(() => _screen = 'login');
-        return;
+    try {final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      setState(() => _screen = 'login');
+      return;
+
       }
+    final existing = await Supabase.instance.client
+        .from('profiles')
+        .select('id, name, age, weight, daily_goal')
+        .eq('id', userId)
+        .maybeSingle();
+      // final existing = await Supabase.instance.client
+      //     .from('profiles')
+      //     .select('id')
+      //     .eq('id', userId)
+      //     .maybeSingle();
 
-      final existing = await Supabase.instance.client
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .maybeSingle();
+      // if (existing != null) {
+      //   _profile.skipOnboarding();
+      //   setState(() => _screen = 'app');
+      // }
+    if (existing != null) {
+      _profile.completeOnboarding(
+        name: existing['name'] ?? '',
+        age: existing['age'] ?? 0,
+        weightKg: (existing['weight'] ?? 0).toDouble(),
+      );
 
-      if (existing != null) {
-        _profile.skipOnboarding();
-        setState(() => _screen = 'app');
-      } else {
+      setState(() => _screen = 'app');
+    } else {
         setState(() => _screen = 'onboarding');
       }
     } catch (_) {

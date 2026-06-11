@@ -20,24 +20,23 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen>
     with TickerProviderStateMixin {
-
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
   // Form values
-  final _nameController   = TextEditingController();
-  final _ageController    = TextEditingController();
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
   final _weightController = TextEditingController();
 
   // Per-step focus nodes so keyboard opens automatically
-  final _nameFocus   = FocusNode();
-  final _ageFocus    = FocusNode();
+  final _nameFocus = FocusNode();
+  final _ageFocus = FocusNode();
   final _weightFocus = FocusNode();
 
   // Slide+fade animation
   late AnimationController _animController;
-  late Animation<double>    _fadeAnim;
-  late Animation<Offset>    _slideAnim;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
 
   @override
   void initState() {
@@ -78,16 +77,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   String? _validateCurrent() {
     switch (_currentStep) {
       case 0:
-        if (_nameController.text.trim().isEmpty) return 'Please enter your name';
-        if (_nameController.text.trim().length < 2) return 'Name is too short';
+        if (_nameController.text.isEmpty) return 'Please enter your name';
+        if (_nameController.text.length < 2) return 'Name is too short';
         return null;
       case 1:
-        final age = int.tryParse(_ageController.text.trim());
+        final age = int.tryParse(_ageController.text);
         if (age == null) return 'Please enter a valid age';
         if (age < 5 || age > 120) return 'Enter an age between 5 and 120';
         return null;
       case 2:
-        final w = double.tryParse(_weightController.text.trim());
+        final w = double.tryParse(_weightController.text);
         if (w == null) return 'Please enter a valid weight';
         if (w < 20 || w > 300) return 'Enter a weight between 20 and 300 kg';
         return null;
@@ -103,7 +102,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           content: Text(error),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -123,7 +124,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       // Focus next field
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_currentStep == 1) FocusScope.of(context).requestFocus(_ageFocus);
-        if (_currentStep == 2) FocusScope.of(context).requestFocus(_weightFocus);
+        if (_currentStep == 2)
+          FocusScope.of(context).requestFocus(_weightFocus);
       });
     } else {
       _finish();
@@ -146,20 +148,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Future<void> _finish() async {
     final user = Supabase.instance.client.auth.currentUser;
 
-    await Supabase.instance.client
-        .from('profiles')
-        .upsert({
+    await Supabase.instance.client.from('profiles').upsert({
       'id': user!.id,
-      'name': _nameController.text.trim(),
-      'age': int.parse(_ageController.text.trim()),
-      'weight': double.parse(_weightController.text.trim()),
+      'name': _nameController.text,
+      'age': int.parse(_ageController.text),
+      'weight': double.parse(_weightController.text),
       'daily_goal': 2500,
     });
 
     widget.profile.completeOnboarding(
-      name: _nameController.text.trim(),
-      age: int.parse(_ageController.text.trim()),
-      weightKg: double.parse(_weightController.text.trim()),
+      name: _nameController.text,
+      age: int.parse(_ageController.text),
+      weightKg: double.parse(_weightController.text),
     );
 
     widget.onComplete();
@@ -183,17 +183,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _StepPage(
-                    fadeAnim:  _fadeAnim,
+                    fadeAnim: _fadeAnim,
                     slideAnim: _slideAnim,
                     child: _buildNameStep(),
                   ),
                   _StepPage(
-                    fadeAnim:  _fadeAnim,
+                    fadeAnim: _fadeAnim,
                     slideAnim: _slideAnim,
                     child: _buildAgeStep(),
                   ),
                   _StepPage(
-                    fadeAnim:  _fadeAnim,
+                    fadeAnim: _fadeAnim,
                     slideAnim: _slideAnim,
                     child: _buildWeightStep(),
                   ),
@@ -215,12 +215,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(3, (i) {
         final active = i == _currentStep;
-        final done   = i < _currentStep;
+        final done = i < _currentStep;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width:  active ? 28 : 8,
+          width: active ? 28 : 8,
           height: 8,
           decoration: BoxDecoration(
             color: done || active ? AppColors.primary : AppColors.ringTrack,
@@ -240,10 +240,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       subtitle: 'We\'ll use this to personalise your experience',
       field: _OnboardingField(
         controller: _nameController,
-        focusNode:  _nameFocus,
-        hint:       'e.g. Alex',
-        label:      'Full name',
-        inputType:  TextInputType.name,
+        focusNode: _nameFocus,
+        hint: 'e.g. Alex',
+        label: 'Full name',
+        inputType: TextInputType.name,
         capitalization: TextCapitalization.words,
         onSubmit: _next,
       ),
@@ -259,10 +259,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       subtitle: 'Age helps us fine-tune your hydration goal',
       field: _OnboardingField(
         controller: _ageController,
-        focusNode:  _ageFocus,
-        hint:       'e.g. 28',
-        label:      'Age (years)',
-        inputType:  TextInputType.number,
+        focusNode: _ageFocus,
+        hint: 'e.g. 28',
+        label: 'Age (years)',
+        inputType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onSubmit: _next,
       ),
@@ -278,10 +278,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       subtitle: 'Weight is the biggest factor in your daily water goal',
       field: _OnboardingField(
         controller: _weightController,
-        focusNode:  _weightFocus,
-        hint:       'e.g. 70',
-        label:      'Weight (kg)',
-        inputType:  const TextInputType.numberWithOptions(decimal: true),
+        focusNode: _weightFocus,
+        hint: 'e.g. 70',
+        label: 'Weight (kg)',
+        inputType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
         ],
@@ -313,8 +313,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new,
-                    color: AppColors.text, size: 18),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: AppColors.text,
+                  size: 18,
+                ),
               ),
             ),
           ),
@@ -374,20 +377,17 @@ class _StepPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: fadeAnim,
-      child: SlideTransition(
-        position: slideAnim,
-        child: child,
-      ),
+      child: SlideTransition(position: slideAnim, child: child),
     );
   }
 }
 
 class _StepContent extends StatelessWidget {
   final IconData icon;
-  final String   title;
-  final String   subtitle;
-  final Widget   field;
-  final String?  bottomNote;
+  final String title;
+  final String subtitle;
+  final Widget field;
+  final String? bottomNote;
 
   const _StepContent({
     required this.icon,
@@ -441,10 +441,7 @@ class _StepContent extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               bottomNote!,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
           ],
         ],
@@ -457,13 +454,13 @@ class _StepContent extends StatelessWidget {
 
 class _OnboardingField extends StatelessWidget {
   final TextEditingController controller;
-  final FocusNode             focusNode;
-  final String                hint;
-  final String                label;
-  final TextInputType         inputType;
-  final TextCapitalization    capitalization;
+  final FocusNode focusNode;
+  final String hint;
+  final String label;
+  final TextInputType inputType;
+  final TextCapitalization capitalization;
   final List<TextInputFormatter>? inputFormatters;
-  final VoidCallback          onSubmit;
+  final VoidCallback onSubmit;
 
   const _OnboardingField({
     required this.controller,
@@ -479,26 +476,29 @@ class _OnboardingField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller:           controller,
-      focusNode:            focusNode,
-      keyboardType:         inputType,
-      textCapitalization:   capitalization,
-      inputFormatters:      inputFormatters,
-      textInputAction:      TextInputAction.next,
-      onSubmitted:          (_) => onSubmit(),
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: inputType,
+      textCapitalization: capitalization,
+      inputFormatters: inputFormatters,
+      textInputAction: TextInputAction.next,
+      onSubmitted: (_) => onSubmit(),
       style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w500,
         color: AppColors.text,
       ),
       decoration: InputDecoration(
-        labelText:     label,
-        hintText:      hint,
-        labelStyle:    const TextStyle(color: AppColors.textMuted, fontSize: 14),
-        hintStyle:     const TextStyle(color: AppColors.textLight, fontSize: 18),
-        filled:        true,
-        fillColor:     AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 18),
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 18,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.cardBorder),
