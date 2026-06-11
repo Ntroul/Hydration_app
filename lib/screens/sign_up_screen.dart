@@ -112,8 +112,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     final password = _passwordController.text;
     final confirm  = _confirmController.text;
 
-    if (name.isEmpty)         return 'Please enter your full name';
-    if (name.length < 2)      return 'Name is too short';
+    // if (name.isEmpty)         return 'Please enter your full name';
+    // if (name.length < 2)      return 'Name is too short';
     if (email.isEmpty)        return 'Please enter your email';
     if (!email.contains('@')) return 'Enter a valid email address';
     if (password.length < 6)  return 'Password must be at least 6 characters';
@@ -314,8 +314,8 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildNameField(),
-          const SizedBox(height: 14),
+          // _buildNameField(),
+          // const SizedBox(height: 14),
           _buildEmailField(),
           const SizedBox(height: 14),
           _buildPasswordField(),
@@ -340,34 +340,34 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  Widget _buildNameField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Full name',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.text,
-          ),
-        ),
-        const SizedBox(height: 8),
-        _AuthField(
-          controller:      _nameController,
-          focusNode:       _nameFocus,
-          label:           'Full name',
-          hint:            'Alex Johnson',
-          icon:            Icons.person_outline_rounded,
-          inputType:       TextInputType.name,
-          capitalization:  TextCapitalization.words,
-          textInputAction: TextInputAction.next,
-          onSubmitted:     (_) =>
-              FocusScope.of(context).requestFocus(_emailFocus),
-        ),
-      ],
-    );
-  }
+  // Widget _buildNameField() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text(
+  //         'Full name',
+  //         style: TextStyle(
+  //           fontSize: 14,
+  //           fontWeight: FontWeight.w600,
+  //           color: AppColors.text,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //       _AuthField(
+  //         controller:      _nameController,
+  //         focusNode:       _nameFocus,
+  //         label:           'Full name',
+  //         hint:            'Alex Johnson',
+  //         icon:            Icons.person_outline_rounded,
+  //         inputType:       TextInputType.name,
+  //         capitalization:  TextCapitalization.words,
+  //         textInputAction: TextInputAction.next,
+  //         onSubmitted:     (_) =>
+  //             FocusScope.of(context).requestFocus(_emailFocus),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildEmailField() {
     return Column(

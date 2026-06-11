@@ -197,6 +197,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     slideAnim: _slideAnim,
                     child: _buildWeightStep(),
                   ),
+                  // _StepPage(
+                  //     fadeAnim: _fadeAnim,
+                  //     slideAnim: _slideAnim,
+                  //     child: _buildLocationStep
+                  // ),
                 ],
               ),
             ),
@@ -290,6 +295,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       bottomNote: '🔒 Stored only on your device. Never shared.',
     );
   }
+
+  // Widget _buildLocationStep(){
+  //   return _StepContent(
+  //     icon: Icons.monitor_weight_outlined,
+  //     title: 'What\'s your weight?',
+  //     subtitle: 'Weight is the biggest factor in your daily water goal',
+  //     field: _OnboardingField(
+  //       controller: _weightController,
+  //       focusNode: _weightFocus,
+  //       hint: 'e.g. 70',
+  //       label: 'Weight (kg)',
+  //       inputType: const TextInputType.numberWithOptions(decimal: true),
+  //       inputFormatters: [
+  //         FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+  //       ],
+  //       onSubmit: _next,
+  //     ),
+  //     bottomNote: '🔒 Stored only on your device. Never shared.',
+  //   );
+  // }
+
 
   // ─── Bottom bar ───────────────────────────────────────────────────────────
 
