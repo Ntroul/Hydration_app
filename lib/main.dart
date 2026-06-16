@@ -79,7 +79,7 @@ class _RootRouterState extends State<_RootRouter> {
       }
     final existing = await Supabase.instance.client
         .from('profiles')
-        .select('id, name, age, weight, daily_goal')
+        .select('id, name, age, weight, location , daily_goal')
         .eq('id', userId)
         .maybeSingle();
       // final existing = await Supabase.instance.client
@@ -97,6 +97,7 @@ class _RootRouterState extends State<_RootRouter> {
         name: existing['name'] ?? '',
         age: existing['age'] ?? 0,
         weightKg: (existing['weight'] ?? 0).toDouble(),
+        location: existing['location'] ?? '',
       );
 
       setState(() => _screen = 'app');

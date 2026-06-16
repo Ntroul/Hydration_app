@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   String? _validate() {
-    final name     = _nameController.text;
+    // final name     = _nameController.text;
     final email    = _emailController.text;
     final password = _passwordController.text;
     final confirm  = _confirmController.text;
@@ -166,6 +166,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     }
   }
 
+  Future<void> signInWithGoogle() async {
+    await Supabase.instance.client.auth.signInWithOAuth(
+      OAuthProvider.google,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,21 +220,21 @@ class _RegisterScreenState extends State<RegisterScreen>
         children: [
           Row(
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.35), width: 1),
-                  ),
-                  child: const Icon(Icons.arrow_back_ios_new,
-                      color: Colors.white, size: 15),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () => Navigator.pop(context),
+              //   child: Container(
+              //     width: 38,
+              //     height: 38,
+              //     decoration: BoxDecoration(
+              //       color: Colors.white.withValues(alpha: 0.2),
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(
+              //           color: Colors.white.withValues(alpha: 0.35), width: 1),
+              //     ),
+              //     child: const Icon(Icons.arrow_back_ios_new,
+              //         color: Colors.white, size: 15),
+              //   ),
+              // ),
               const SizedBox(width: 12),
               Container(
                 width: 38,
@@ -645,17 +651,17 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: _SocialButton(
             label: 'Google',
             icon: Icons.g_mobiledata_rounded,
-            onTap: widget.onRegister,
+            onTap: signInWithGoogle,
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: _SocialButton(
-            label: 'Apple',
-            icon: Icons.apple_rounded,
-            onTap: widget.onRegister,
-          ),
-        ),
+        // Expanded(
+        //   child: _SocialButton(
+        //     label: 'Apple',
+        //     icon: Icons.apple_rounded,
+        //     onTap: widget.onRegister,
+        //   ),
+        // ),
       ],
     );
   }

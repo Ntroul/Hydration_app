@@ -303,8 +303,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _SettingsRow(
             icon: Icons.location_on_outlined,
             title: 'Location',
-            trailing: const Text(
-              'Athens, GR',
+            trailing: Text(
+              _p.location.isEmpty ? '—' : _p.location,
               style: TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
           ),

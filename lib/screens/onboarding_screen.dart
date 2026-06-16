@@ -27,11 +27,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
+  final _locationController = TextEditingController();
 
   // Per-step focus nodes so keyboard opens automatically
   final _nameFocus = FocusNode();
   final _ageFocus = FocusNode();
   final _weightFocus = FocusNode();
+  final _locationFocus = FocusNode();
 
   // Slide+fade animation
   late AnimationController _animController;
@@ -69,6 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _ageFocus.dispose();
     _weightFocus.dispose();
     _animController.dispose();
+    _locationFocus.dispose();
     super.dispose();
   }
 
@@ -90,6 +93,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         if (w == null) return 'Please enter a valid weight';
         if (w < 20 || w > 300) return 'Enter a weight between 20 and 300 kg';
         return null;
+      case 3:
+        final l = double.tryParse(_locationController.text);
+        // if (l == null) return 'Please enter a valid location';
     }
     return null;
   }
@@ -111,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       return;
     }
 
-    if (_currentStep < 2) {
+    if (_currentStep < 3) {
       setState(() => _currentStep++);
       _pageController.nextPage(
         duration: const Duration(milliseconds: 380),
@@ -153,6 +159,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       'name': _nameController.text,
       'age': int.parse(_ageController.text),
       'weight': double.parse(_weightController.text),
+      'location': _locationController.text,
       'daily_goal': 2500,
     });
 
@@ -160,6 +167,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       name: _nameController.text,
       age: int.parse(_ageController.text),
       weightKg: double.parse(_weightController.text),
+      location: _locationController.text,
     );
 
     widget.onComplete();
@@ -197,11 +205,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     slideAnim: _slideAnim,
                     child: _buildWeightStep(),
                   ),
-                  // _StepPage(
-                  //     fadeAnim: _fadeAnim,
-                  //     slideAnim: _slideAnim,
-                  //     child: _buildLocationStep
-                  // ),
+                  _StepPage(
+                      fadeAnim: _fadeAnim,
+                      slideAnim: _slideAnim,
+                      child: _buildLocationStep(),
+                  ),
                 ],
               ),
             ),
@@ -296,31 +304,31 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  // Widget _buildLocationStep(){
-  //   return _StepContent(
-  //     icon: Icons.monitor_weight_outlined,
-  //     title: 'What\'s your weight?',
-  //     subtitle: 'Weight is the biggest factor in your daily water goal',
-  //     field: _OnboardingField(
-  //       controller: _weightController,
-  //       focusNode: _weightFocus,
-  //       hint: 'e.g. 70',
-  //       label: 'Weight (kg)',
-  //       inputType: const TextInputType.numberWithOptions(decimal: true),
-  //       inputFormatters: [
-  //         FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-  //       ],
-  //       onSubmit: _next,
-  //     ),
-  //     bottomNote: '🔒 Stored only on your device. Never shared.',
-  //   );
-  // }
+  Widget _buildLocationStep(){
+    return _StepContent(
+      icon: Icons.location_on_outlined,
+      title: 'What\'s your location?',
+      subtitle: "Climate and weather can affect how much water you need.",
+      field: _OnboardingField(
+        controller: _locationController,
+        focusNode: _locationFocus,
+        hint: 'e.g. Athens,GR',
+        label: 'Location',
+        inputType: TextInputType.text,
+        inputFormatters: [
+          // FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+        ],
+        onSubmit: _next,
+      ),
+      bottomNote: '🔒 Stored only on your device. Never shared.',
+    );
+  }
 
 
   // ─── Bottom bar ───────────────────────────────────────────────────────────
 
   Widget _buildBottomBar() {
-    final isLast = _currentStep == 2;
+    final isLast = _currentStep == 3;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       child: Row(

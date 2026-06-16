@@ -16,7 +16,7 @@ class NotificationService {
       tz.getLocation(timezoneInfo.identifier),
     );
 
-    print("Timezone set to: ${timezoneInfo.identifier}");
+    // print("Timezone set to: ${timezoneInfo.identifier}");
 
     const androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -31,7 +31,7 @@ class NotificationService {
     final canSchedule =
     await android?.canScheduleExactNotifications();
 
-    print("Can schedule exact notifications: $canSchedule");
+    // print("Can schedule exact notifications: $canSchedule");
 
     await android?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -72,12 +72,12 @@ class NotificationService {
     final scheduledDate = now.add(
       Duration(minutes: minutes),
     );
-    print("Device clock: ${DateTime.now()}");
-    print("NOW: $now");
-    print("SCHEDULED: $scheduledDate");
+    // print("Device clock: ${DateTime.now()}");
+    // print("NOW: $now");
+    // print("SCHEDULED: $scheduledDate");
 
     try {
-      print("Before zonedSchedule");
+      // print("Before zonedSchedule");
 
       await _plugin.zonedSchedule(
         id,
@@ -97,14 +97,14 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
 
-      print("After zonedSchedule");
+      // print("After zonedSchedule");
 
       final pending =
       await _plugin.pendingNotificationRequests();
 
-      print("Pending notifications: ${pending.length}");
+      // print("Pending notifications: ${pending.length}");
     } catch (e) {
-      print("Schedule error: $e");
+      // print("Schedule error: $e");
     }
   }
 
