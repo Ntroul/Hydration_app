@@ -142,8 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _goal = (profile['daily_goal'] ?? 0).toDouble();
     });
   }
-
-
+  
   Future<void> _loadData() async {
     await _loadProfile();
 
@@ -162,8 +161,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final logs = await _supabase
         .from('water_logs')
         .select()
-        .eq('user_id', user.id)
-        .gte('created_at', startOfDay.toIso8601String());
+        .eq('user_id', user.id);
+        // .gte('created_at', startOfDay.toIso8601String());
 
     double total = 0;
 
