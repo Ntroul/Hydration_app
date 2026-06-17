@@ -23,6 +23,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String _name     = '';
   double _consumed = 0;
 
+  final _supabase = Supabase.instance.client;
+
   late AnimationController _fillController;
   late Animation<double>   _fillAnimation;
 
@@ -60,15 +62,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+
     _fillController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
+
     _fillAnimation = CurvedAnimation(
       parent: _fillController,
       curve: Curves.easeOutCubic,
     );
+
+    _loadData();
+
     _fillController.forward();
   }
 
@@ -78,14 +84,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _addWater(double ml) {
-    setState(() => _consumed = math.min(_consumed + ml, _goal));
-    _fillController..reset()..forward();
+  Future<void> _addWater(double ml) async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    await _supabase.from('water_logs').insert({
+      'user_id': user.id,
+      'amount': ml.toInt(),
+    });
+
+    setState(() {
+      _consumed += ml;
+    });
+
+    _fillController
+      ..reset()
+      ..forward();
   }
 
-  void _resetWater() {
-    setState(() => _consumed = 0);
-    _fillController..reset()..forward();
+  Future<void> _undoLastDrink() async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    final lastDrink = await _supabase
+        .from('water_logs')
+        .select()
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .single();
+
+    await _supabase
+        .from('water_logs')
+        .delete()
+        .eq('id', lastDrink['id']);
+
+    setState(() {
+      _consumed -= (lastDrink['amount'] as num).toDouble();
+
+      if (_consumed < 0) {
+        _consumed = 0;
+      }
+    });
+
+    _fillController
+      ..reset()
+      ..forward();
   }
 
   Future<void> _loadProfile() async {
@@ -94,6 +140,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       _name = profile['name'] ?? 'Friend';
       _goal = (profile['daily_goal'] ?? 0).toDouble();
+    });
+  }
+
+
+  Future<void> _loadData() async {
+    await _loadProfile();
+
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    final today = DateTime.now();
+
+    final startOfDay = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    );
+
+    final logs = await _supabase
+        .from('water_logs')
+        .select()
+        .eq('user_id', user.id)
+        .gte('created_at', startOfDay.toIso8601String());
+
+    double total = 0;
+
+    for (final log in logs) {
+      total += (log['amount'] as num).toDouble();
+    }
+
+    setState(() {
+      _consumed = total;
     });
   }
 
@@ -448,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             //-----------
             GestureDetector(
-              onTap: _resetWater,
+              onTap: _undoLastDrink,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 5),
