@@ -2,10 +2,36 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hydration_app/services/water_service.dart';
+import 'package:hydration_app/services/water_sync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse response) async {
+  if (response.actionId == 'drink_water') {
+
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+
+    if (userId == null) return;
+
+    final supabase = SupabaseClient(
+      'https://gysjshfvkbocjmhfgawp.supabase.co/',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c2pzaGZ2a2JvY2ptaGZnYXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4ODQxMjUsImV4cCI6MjA5NTQ2MDEyNX0.VgGcuinb0nMQlR8gp-qskzIxSmuUB-CnmX4TvXcJq_Q'
+    );
+
+    await supabase.from('water_logs').insert({
+      'user_id': userId,
+      'amount': 250,
+    });
+
+    WaterSync.notify();
+  }
+}
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -28,18 +54,23 @@ class NotificationService {
         android: androidSettings,
       ),
       onDidReceiveNotificationResponse: (response) async {
-        debugPrint(
-          'ACTION PRESSED -> ${response.actionId}',
-        );
+        debugPrint('ACTION PRESSED -> ${response.actionId}');
+
         if (response.actionId == 'drink_water') {
-          await WaterService.addWater(250);
+          final userId = Supabase.instance.client.auth.currentUser?.id;
+
+          if (userId == null) return;
+
+          await WaterService.addWater(250, userId);
+
+          WaterSync.notify();
+
           debugPrint('250ml added');
         }
 
-        if (response.actionId == 'dismiss') {
-          return;
-        }
+        if (response.actionId == 'dismiss') return;
       },
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
 
     final android = _plugin.resolvePlatformSpecificImplementation<

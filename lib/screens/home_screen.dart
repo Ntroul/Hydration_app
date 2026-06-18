@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:hydration_app/screens/trees_screen.dart';
 import '../models/reminder.dart';
 import '../services/notification_services.dart';
-import '../services/water_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/reminder_row.dart';
 
 import 'dart:math' as math;
+
+import '../services/water_service.dart';
+import '../services/water_sync.dart';
 
 import '../services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -60,6 +62,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return const Color(0xFF639922);
   }
 
+  late VoidCallback _waterListener;
+
   @override
   void initState() {
     super.initState();
@@ -76,11 +80,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _loadData();
 
+    _waterListener = () {
+      _loadData(); // reload from Supabase (safe + correct)
+    };
+
+    WaterSync.notifier.addListener(_waterListener);
+
     _fillController.forward();
   }
 
   @override
   void dispose() {
+    WaterSync.notifier.removeListener(_waterListener);
     _fillController.dispose();
     super.dispose();
   }
@@ -98,6 +109,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       _consumed += ml;
     });
+
+    WaterSync.notify();
 
     _fillController
       ..reset()

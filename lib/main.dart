@@ -15,6 +15,8 @@ import 'models/user_profile.dart';
 import 'screens/login_screen.dart';
 import 'screens/onboarding_screen.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -76,7 +78,10 @@ class _RootRouterState extends State<_RootRouter> {
       setState(() => _screen = 'login');
       return;
 
-      }
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_id', userId);
+
     final existing = await Supabase.instance.client
         .from('profiles')
         .select('id, name, age, weight, location , daily_goal')
