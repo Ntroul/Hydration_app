@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hydration_app/screens/trees_screen.dart';
 import '../models/reminder.dart';
 import '../services/notification_services.dart';
+import '../services/water_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/reminder_row.dart';
 
@@ -142,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _goal = (profile['daily_goal'] ?? 0).toDouble();
     });
   }
-  
+
   Future<void> _loadData() async {
     await _loadProfile();
 
@@ -178,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background, // or primaryLight or background
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -192,15 +193,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     const SizedBox(height: 20),
                     _buildPlantTank(),
-                    const SizedBox(height: 16),
-                    _buildProgressBar(),
+                    // const SizedBox(height: 16),
+                    // _buildProgressBar(),
                     const SizedBox(height: 20),
+                    _buildQuickAdd(),
+
+                    const SizedBox(height: 24),
                     _buildStatsRow(),
 
                     const SizedBox(height: 24),
-                    _buildQuickAdd(),
-                    const SizedBox(height: 24),
                     _buildReminderHistory(),
+
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -427,56 +430,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildProgressBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 400),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _progressColor,
-                ),
-                child: Text('${_consumed.round()} ml consumed'),
-              ),
-              const Spacer(),
-              Text(
-                '${_remaining.round()} ml left',
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.textMuted),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: _progress),
-              duration: const Duration(milliseconds: 800),
-              curve: Curves.easeOutCubic,
-              builder: (_, value, _) => LinearProgressIndicator(
-                value: value,
-                minHeight: 8,
-                backgroundColor: AppColors.ringTrack,
-                valueColor:
-                AlwaysStoppedAnimation<Color>(_progressColor),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildProgressBar() {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.surface,
+  //       borderRadius: BorderRadius.circular(16),
+  //       border: Border.all(color: AppColors.cardBorder),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             AnimatedDefaultTextStyle(
+  //               duration: const Duration(milliseconds: 400),
+  //               style: TextStyle(
+  //                 fontSize: 13,
+  //                 fontWeight: FontWeight.w600,
+  //                 color: _progressColor,
+  //               ),
+  //               child: Text('${_consumed.round()} ml consumed'),
+  //             ),
+  //             const Spacer(),
+  //             Text(
+  //               '${_remaining.round()} ml left',
+  //               style: const TextStyle(
+  //                   fontSize: 12, color: AppColors.textMuted),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 8),
+  //         ClipRRect(
+  //           borderRadius: BorderRadius.circular(6),
+  //           child: TweenAnimationBuilder<double>(
+  //             tween: Tween(begin: 0, end: _progress),
+  //             duration: const Duration(milliseconds: 800),
+  //             curve: Curves.easeOutCubic,
+  //             builder: (_, value, _) => LinearProgressIndicator(
+  //               value: value,
+  //               minHeight: 8,
+  //               backgroundColor: AppColors.ringTrack,
+  //               valueColor:
+  //               AlwaysStoppedAnimation<Color>(_progressColor),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildQuickAdd() {
     return Column(
@@ -494,27 +497,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             const Spacer(),
-            //--------temp button
-            // ElevatedButton(
-            // onPressed: () async {
-            //   await NotificationService.showTestNotification();
-            // },
-            // child: const Text("TEST"),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     final pending =
-            //     await NotificationService.getPendingNotifications();
-            //
-            //     print("Pending count: ${pending.length}");
-            //
-            //     for (final p in pending) {
-            //       print("ID: ${p.id}");
-            //       print("Title: ${p.title}");
-            //     }
-            //   },
-            //   child: const Text("Check"),
-            // ),
             ElevatedButton(
               onPressed: () async {
                 await NotificationService.scheduleReminder(

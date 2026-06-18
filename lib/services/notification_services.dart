@@ -1,7 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:hydration_app/services/water_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -16,13 +20,26 @@ class NotificationService {
       tz.getLocation(timezoneInfo.identifier),
     );
 
-    // print("Timezone set to: ${timezoneInfo.identifier}");
-
     const androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
     await _plugin.initialize(
-      const InitializationSettings(android: androidSettings),
+      const InitializationSettings(
+        android: androidSettings,
+      ),
+      onDidReceiveNotificationResponse: (response) async {
+        debugPrint(
+          'ACTION PRESSED -> ${response.actionId}',
+        );
+        if (response.actionId == 'drink_water') {
+          await WaterService.addWater(250);
+          debugPrint('250ml added');
+        }
+
+        if (response.actionId == 'dismiss') {
+          return;
+        }
+      },
     );
 
     final android = _plugin.resolvePlatformSpecificImplementation<
@@ -30,8 +47,6 @@ class NotificationService {
 
     final canSchedule =
     await android?.canScheduleExactNotifications();
-
-    // print("Can schedule exact notifications: $canSchedule");
 
     await android?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -58,6 +73,17 @@ class NotificationService {
           priority: Priority.high,
           playSound: true,
           enableVibration: true,
+
+          actions: [
+            AndroidNotificationAction(
+                'drink_water',
+                'Drink water',
+            ),
+            AndroidNotificationAction(
+                'dismiss',
+                'Dismiss',
+            ),
+          ],
         ),
       ),
     );
@@ -72,13 +98,7 @@ class NotificationService {
     final scheduledDate = now.add(
       Duration(minutes: minutes),
     );
-    // print("Device clock: ${DateTime.now()}");
-    // print("NOW: $now");
-    // print("SCHEDULED: $scheduledDate");
-
     try {
-      // print("Before zonedSchedule");
-
       await _plugin.zonedSchedule(
         id,
         'Hydration Coach 💧',
@@ -92,17 +112,23 @@ class NotificationService {
             priority: Priority.high,
             playSound: true,
             enableVibration: true,
+
+            actions: [
+              AndroidNotificationAction(
+                'drink_water',
+                'Drink water',
+              ),
+              AndroidNotificationAction(
+                'dismiss',
+                'Dismiss',
+              ),
+            ],
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
+      final pending = await _plugin.pendingNotificationRequests();
 
-      // print("After zonedSchedule");
-
-      final pending =
-      await _plugin.pendingNotificationRequests();
-
-      // print("Pending notifications: ${pending.length}");
     } catch (e) {
       // print("Schedule error: $e");
     }
