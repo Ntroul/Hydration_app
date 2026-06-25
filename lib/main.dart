@@ -87,16 +87,7 @@ class _RootRouterState extends State<_RootRouter> {
         .select('id, name, age, weight, location , daily_goal')
         .eq('id', userId)
         .maybeSingle();
-      // final existing = await Supabase.instance.client
-      //     .from('profiles')
-      //     .select('id')
-      //     .eq('id', userId)
-      //     .maybeSingle();
 
-      // if (existing != null) {
-      //   _profile.skipOnboarding();
-      //   setState(() => _screen = 'app');
-      // }
     if (existing != null) {
       _profile.completeOnboarding(
         name: existing['name'] ?? '',

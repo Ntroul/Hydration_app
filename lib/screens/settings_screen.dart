@@ -93,8 +93,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Goal card ────────────────────────────────────────────────────────────
-
   Widget _buildGoalCard() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -147,8 +145,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Profile card — shows onboarding data ─────────────────────────────────
-
   Widget _buildProfileCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -159,7 +155,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Column(
         children: [
-          // ── Name ──
           _SettingsRow(
             icon: Icons.person_outline,
             title: 'Name',
@@ -169,7 +164,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           _divider(),
-          // ── Age ──
           _SettingsRow(
             icon: Icons.cake_outlined,
             title: 'Age',
@@ -179,7 +173,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           _divider(),
-          // ── Weight slider — seeded from onboarding ──
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
@@ -233,7 +226,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           _divider(),
-          // ── Activity level ──
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
@@ -313,8 +305,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Reminders ────────────────────────────────────────────────────────────
-
   Widget _buildRemindersCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -325,8 +315,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Column(
         children: [
-
-          // Enable reminders
           _ToggleRow(
             icon: Icons.notifications_active_outlined,
             title: 'Enable reminders',
@@ -341,7 +329,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _divider(),
 
-          // Frequency
           _SettingsRow(
             icon: Icons.schedule,
             title: 'Reminder frequency',
@@ -374,7 +361,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _divider(),
 
-          // Wake time
           _SettingsRow(
             icon: Icons.wb_sunny_outlined,
             title: 'Wake time',
@@ -399,7 +385,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _divider(),
 
-          // Sleep time
           _SettingsRow(
             icon: Icons.bedtime_outlined,
             title: 'Sleep time',
@@ -424,7 +409,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _divider(),
 
-          // Test notification
           _SettingsRow(
             icon: Icons.notifications,
             title: 'Test notification',
@@ -439,53 +423,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  // ─── Integrations ─────────────────────────────────────────────────────────
-
-  // Widget _buildIntegrationsCard() {
-  //   return Container(
-  //     padding: const EdgeInsets.all(16),
-  //     decoration: BoxDecoration(
-  //       color: AppColors.surface,
-  //       borderRadius: BorderRadius.circular(16),
-  //       border: Border.all(color: AppColors.cardBorder),
-  //     ),
-  //     child: Column(
-  //       children: [
-  //         _ToggleRow(
-  //           icon: Icons.favorite_border,
-  //           title: 'Health Connect',
-  //           subtitle: 'Sync with Android Health',
-  //           value: _healthConnect,
-  //           onChanged: (v) => setState(() => _healthConnect = v),
-  //         ),
-  //         _divider(),
-  //         _SettingsRow(
-  //           icon: Icons.watch_outlined,
-  //           title: 'Wear OS',
-  //           trailing: Container(
-  //             padding:
-  //             const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-  //             decoration: BoxDecoration(
-  //               color: AppColors.ringTrack,
-  //               borderRadius: BorderRadius.circular(8),
-  //             ),
-  //             child: const Text(
-  //               'Not connected',
-  //               style: TextStyle(
-  //                 fontSize: 11,
-  //                 color: AppColors.textMuted,
-  //                 fontWeight: FontWeight.w500,
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // ─── Display ──────────────────────────────────────────────────────────────
 
   Widget _buildDisplayCard() {
     return Container(
@@ -524,8 +461,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  // ─── App info ─────────────────────────────────────────────────────────────
 
   Widget _buildAppInfo() {
     return Center(
@@ -578,8 +513,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
-// ─── Shared row widgets ───────────────────────────────────────────────────────
 
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
@@ -664,7 +597,7 @@ class _ToggleRow extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             activeTrackColor: AppColors.primaryLight,
             inactiveThumbColor: AppColors.textLight,
             inactiveTrackColor: AppColors.ringTrack,

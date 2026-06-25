@@ -5,9 +5,6 @@ import '../services/notification_services.dart';
 import '../theme/app_colors.dart';
 import '../widgets/reminder_row.dart';
 
-import 'dart:math' as math;
-
-import '../services/water_service.dart';
 import '../services/water_sync.dart';
 
 import '../services/supabase_service.dart';
@@ -20,7 +17,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin , WidgetsBindingObserver {
   final SupabaseService _supabaseService = SupabaseService();
   double _goal     = 0;
   String _name     = '';
@@ -29,14 +26,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _supabase = Supabase.instance.client;
 
   late AnimationController _fillController;
-  late Animation<double>   _fillAnimation;
+  // late Animation<double>   _fillAnimation;
 
   double get _progress {
     if (_goal <= 0) return 0.0;
     return (_consumed / _goal).clamp(0.0, 1.0);
   }
-
-  double get _remaining => math.max(0, _goal - _consumed);
 
   String get _greeting {
     final h = DateTime.now().hour;
@@ -68,25 +63,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     _fillController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
 
-    _fillAnimation = CurvedAnimation(
-      parent: _fillController,
-      curve: Curves.easeOutCubic,
-    );
+    // _fillAnimation = CurvedAnimation(
+    //   parent: _fillController,
+    //   curve: Curves.easeOutCubic,
+    // );
 
     _loadData();
 
     _waterListener = () {
-      _loadData(); // reload from Supabase (safe + correct)
+      _loadData();
     };
 
     WaterSync.notifier.addListener(_waterListener);
 
     _fillController.forward();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadData();
+    }
   }
 
   @override
@@ -149,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _loadProfile() async {
-    final user = Supabase.instance.client.auth.currentUser;
+    // final user = Supabase.instance.client.auth.currentUser;
     final profile = await _supabaseService.getProfile();
     setState(() {
       _name = profile['name'] ?? 'Friend';
@@ -164,13 +168,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (user == null) return;
 
-    final today = DateTime.now();
-
-    final startOfDay = DateTime(
-      today.year,
-      today.month,
-      today.day,
-    );
+    // final today = DateTime.now();
+    //
+    // final startOfDay = DateTime(
+    //   today.year,
+    //   today.month,
+    //   today.day,
+    // );
 
     final logs = await _supabase
         .from('water_logs')
@@ -206,8 +210,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     const SizedBox(height: 20),
                     _buildPlantTank(),
-                    // const SizedBox(height: 16),
-                    // _buildProgressBar(),
                     const SizedBox(height: 20),
                     _buildQuickAdd(),
 
@@ -442,57 +444,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
-  // Widget _buildProgressBar() {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-  //     decoration: BoxDecoration(
-  //       color: AppColors.surface,
-  //       borderRadius: BorderRadius.circular(16),
-  //       border: Border.all(color: AppColors.cardBorder),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Row(
-  //           children: [
-  //             AnimatedDefaultTextStyle(
-  //               duration: const Duration(milliseconds: 400),
-  //               style: TextStyle(
-  //                 fontSize: 13,
-  //                 fontWeight: FontWeight.w600,
-  //                 color: _progressColor,
-  //               ),
-  //               child: Text('${_consumed.round()} ml consumed'),
-  //             ),
-  //             const Spacer(),
-  //             Text(
-  //               '${_remaining.round()} ml left',
-  //               style: const TextStyle(
-  //                   fontSize: 12, color: AppColors.textMuted),
-  //             ),
-  //           ],
-  //         ),
-  //         const SizedBox(height: 8),
-  //         ClipRRect(
-  //           borderRadius: BorderRadius.circular(6),
-  //           child: TweenAnimationBuilder<double>(
-  //             tween: Tween(begin: 0, end: _progress),
-  //             duration: const Duration(milliseconds: 800),
-  //             curve: Curves.easeOutCubic,
-  //             builder: (_, value, _) => LinearProgressIndicator(
-  //               value: value,
-  //               minHeight: 8,
-  //               backgroundColor: AppColors.ringTrack,
-  //               valueColor:
-  //               AlwaysStoppedAnimation<Color>(_progressColor),
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildQuickAdd() {
     return Column(
