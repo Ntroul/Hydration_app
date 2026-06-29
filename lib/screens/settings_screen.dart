@@ -82,7 +82,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-
   void _showEditSheet({
     required String title,
     required String initialValue,
@@ -225,8 +224,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildSectionLabel('Display'),
                     _buildDisplayCard(),
                     const SizedBox(height: 32),
-
-
                     const SizedBox(height: 24),
 
                     SizedBox(
@@ -242,7 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         onPressed: _saveSettings,
                         child: const Text(
-                          'Save Changes',
+                          'Save All Changes',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
