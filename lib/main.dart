@@ -77,8 +77,8 @@ class _RootRouterState extends State<_RootRouter> {
     if (userId == null) {
       setState(() => _screen = 'login');
       return;
-
     }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', userId);
 
@@ -106,7 +106,6 @@ class _RootRouterState extends State<_RootRouter> {
   }
 
   void _onGoToRegister() => setState(() => _screen = 'register');
-
   void _onRegister()     => setState(() => _screen = 'onboarding');
   void _onBackToLogin()  => setState(() => _screen = 'login');
 

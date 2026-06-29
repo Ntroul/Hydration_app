@@ -14,4 +14,15 @@ class SupabaseService {
 
     return response;
   }
+
+  Future<void> updateProfile(Map<String, dynamic> values) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    await supabase
+        .from('profiles')
+        .update(values)
+        .eq('id', user.id);
+  }
 }
