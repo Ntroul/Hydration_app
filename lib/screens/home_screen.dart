@@ -103,6 +103,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
   Future<void> _addWater(double ml) async {
     final user = _supabase.auth.currentUser;
 
+    if(_consumed >= _goal){
+      return;
+    }
+
     if (user == null) return;
 
     await _supabase.from('water_logs').insert({
@@ -111,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     });
 
     setState(() {
-      _consumed += ml;
+      _consumed = (_consumed + ml).clamp(0.0, _goal);
     });
 
     WaterSync.notify();
@@ -189,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     }
 
     setState(() {
-      _consumed = total;
+      _consumed = total.clamp(0.0, _goal);
     });
   }
 
@@ -370,31 +374,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
                   Container(
                     width: 56,
                     height: 180,
+                    padding: const EdgeInsets.all(2), // border thickness
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(
-                          color: _progressColor.withValues(alpha: 0.35), width: 2),
-                      color: _progressColor.withValues(alpha: 0.05),
+                        color: _progressColor.withValues(alpha: 0.35),
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(26),
-                    child: SizedBox(
-                      width: 52,
-                      height: 176,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
                       child: Stack(
                         alignment: Alignment.bottomCenter,
                         children: [
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: 176 * _progress,
+                          Container(
+                            color: _progressColor.withValues(alpha: 0.05),
+                          ),
+
+                          FractionallySizedBox(
+                            heightFactor: _progress,
+                            alignment: Alignment.bottomCenter,
                             child: Container(
-                              decoration: BoxDecoration(
-                                color: _progressColor.withValues(alpha: 0.65),
-                                borderRadius: BorderRadius.circular(26),
-                              ),
+                              color: _progressColor.withValues(alpha: 0.65),
                             ),
                           ),
                         ],
