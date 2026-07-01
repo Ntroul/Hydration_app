@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:hydration_app/screens/trees_screen.dart';
 import '../models/reminder.dart';
 import '../services/notification_services.dart';
 import '../theme/app_colors.dart';
-import '../widgets/reminder_row.dart';
 
 import '../services/water_sync.dart';
 
@@ -26,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
   final _supabase = Supabase.instance.client;
 
   late AnimationController _fillController;
-  // late Animation<double>   _fillAnimation;
 
   double get _progress {
     if (_goal <= 0) return 0.0;
@@ -69,11 +68,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-
-    // _fillAnimation = CurvedAnimation(
-    //   parent: _fillController,
-    //   curve: Curves.easeOutCubic,
-    // );
 
     _loadData();
 
@@ -214,16 +208,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
                   children: [
                     const SizedBox(height: 20),
                     _buildPlantTank(),
+
                     const SizedBox(height: 20),
                     _buildQuickAdd(),
 
                     const SizedBox(height: 24),
                     _buildStatsRow(),
-
-                    const SizedBox(height: 24),
-                    _buildReminderHistory(),
-
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -318,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
   Widget _buildPlantTank() {
     return Container(
-      height: 280,
+      height: 320, // or 280
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -469,9 +459,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
                   minutes: 1,
                 );
               },
-              child: const Text("1min"),
+              child: const Text("1min"), // TEMPORARY
             ),
-            //-----------
             GestureDetector(
               onTap: _undoLastDrink,
               child: Container(
@@ -552,72 +541,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
           child: _StatCard(
             icon: Icons.alarm_outlined,
             iconColor: AppColors.primary,
-            iconBg: AppColors.primaryLight,
-            label: 'Next reminder',
+            iconBg: AppColors.surface, // or primary light
+            label: 'Last Hydrated',
             value: next?.time ?? '—',
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildReminderHistory() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                "Today's reminders",
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.text,
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text('See all',
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.cardBorder),
-          ),
-          child: Column(
-            children: sampleReminders.asMap().entries.map((entry) {
-              final i = entry.key;
-              final r = entry.value;
-              return Column(
-                children: [
-                  ReminderRow(reminder: r),
-                  if (i < sampleReminders.length - 1)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Divider(
-                          height: 1,
-                          thickness: 0.5,
-                          color: AppColors.cardBorder),
-                    ),
-                ],
-              );
-            }).toList(),
+        Expanded(
+          child: _StatCard(
+            icon: Icons.local_fire_department,
+            iconColor: AppColors.streakOrange,
+            iconBg: AppColors.surface,
+            label: 'Avg. Daily Intake',
+            value: next?.time ?? '—',
           ),
         ),
       ],
