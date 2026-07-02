@@ -477,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
                   children: [
                     Icon(Icons.refresh, size: 13, color: Color(0xFFA32D2D)),
                     SizedBox(width: 4),
-                    Text('Undo last drink',
+                    Text('Undo',
                         style: TextStyle(
                           fontSize: 12,
                           color: Color(0xFFA32D2D),
@@ -546,6 +546,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
             value: next?.time ?? '—',
           ),
         ),
+
         Expanded(
           child: _StatCard(
             icon: Icons.local_fire_department,

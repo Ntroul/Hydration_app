@@ -45,6 +45,7 @@ class NotificationService {
     tz.setLocalLocation(
       tz.getLocation(timezoneInfo.identifier),
     );
+    debugPrint(tz.local.name);
 
     const androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -76,8 +77,8 @@ class NotificationService {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
 
-    final canSchedule =
-    await android?.canScheduleExactNotifications();
+    final canSchedule = await android?.canScheduleExactNotifications();
+    debugPrint("Can schedule exact: $canSchedule");
 
     await android?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -89,6 +90,7 @@ class NotificationService {
     );
 
     await android?.requestNotificationsPermission();
+    await android?.requestExactAlarmsPermission();
   }
 
   static Future<void> showTestNotification() async {
@@ -126,6 +128,7 @@ class NotificationService {
   }) async {
     final now = tz.TZDateTime.now(tz.local);
 
+
     final scheduledDate = now.add(
       Duration(minutes: minutes),
     );
@@ -158,10 +161,19 @@ class NotificationService {
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
+      debugPrint("Now: $now");
+      debugPrint("Scheduling for: $scheduledDate");
       final pending = await _plugin.pendingNotificationRequests();
 
-    } catch (e) {
-      // print("Schedule error: $e");
+      debugPrint("Pending notifications:");
+      for (final p in pending) {
+        debugPrint("${p.id} ${p.title}");
+      }
+
+    } catch (e, stack) {
+      debugPrint("Schedule error:");
+      debugPrint(e.toString());
+      debugPrint(stack.toString());
     }
   }
 
