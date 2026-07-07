@@ -62,7 +62,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'activity_level': _activityLevel,
         'location': _p.location,
         'daily_goal': _computedGoal,
+
+        'notifications_enabled': _notificationsEnabled,
+        'reminder_minutes': _reminderMinutes,
+        'wake_time': _wakeTime.format(context),
+        'sleep_time': _sleepTime.format(context),
+
       });
+
+      if (_notificationsEnabled) {
+        await NotificationService.scheduleDailyReminders(
+          wakeTime: _wakeTime,
+          sleepTime: _sleepTime,
+          intervalMinutes: _reminderMinutes,
+        );
+      } else {
+        await NotificationService.cancelAll();
+      }
 
       if (!mounted) return;
 

@@ -8,5 +8,9 @@ class WaterService {
       'user_id': userId,
       'amount': amount,
     });
+
+    await supabase.from('profiles').update({
+      'last_hydrated': DateTime.now().toIso8601String(),
+    }).eq('id', userId);
   }
 }

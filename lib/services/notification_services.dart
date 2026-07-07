@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hydration_app/services/water_service.dart';
@@ -120,6 +121,75 @@ class NotificationService {
         ),
       ),
     );
+  }
+
+  static Future<void> scheduleDailyReminders({
+    required TimeOfDay wakeTime,
+    required TimeOfDay sleepTime,
+    required int intervalMinutes,
+  }) async {
+    await cancelAll();
+
+    final now = tz.TZDateTime.now(tz.local);
+
+    var reminder = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      wakeTime.hour,
+      wakeTime.minute,
+    );
+
+    final end = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      sleepTime.hour,
+      sleepTime.minute,
+    );
+
+    int id = 1;
+
+    while (reminder.isBefore(end) || reminder.isAtSameMomentAs(end)) {
+
+      if (reminder.isAfter(now)) {
+        await _plugin.zonedSchedule(
+          id,
+          'Hydration Coach 💧',
+          'Time to drink water',
+          reminder,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'hydration_channel',
+              'Hydration Reminders',
+              importance: Importance.max,
+              priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
+              actions: [
+                AndroidNotificationAction(
+                  'drink_water',
+                  'Drink water',
+                ),
+                AndroidNotificationAction(
+                  'dismiss',
+                  'Dismiss',
+                ),
+              ],
+            ),
+          ),
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        );
+
+        id++;
+      }
+
+      reminder = reminder.add(
+        Duration(minutes: intervalMinutes),
+      );
+    }
   }
 
   static Future<void> scheduleReminder({

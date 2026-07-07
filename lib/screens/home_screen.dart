@@ -108,6 +108,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
       'amount': ml.toInt(),
     });
 
+    await _supabase.from('profiles').update({
+      'last_hydrated': DateTime.now().toIso8601String(),
+    }).eq('id', user.id);
+
     setState(() {
       _consumed = (_consumed + ml).clamp(0.0, _goal);
     });
@@ -452,15 +456,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
               ),
             ),
             const Spacer(),
-            ElevatedButton(
-              onPressed: () async {
-                await NotificationService.scheduleReminder(
-                  id: 1,
-                  minutes: 1,
-                );
-              },
-              child: const Text("1min"), // TEMPORARY
-            ),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await NotificationService.scheduleReminder(
+            //       id: 1,
+            //       minutes: 1,
+            //     );
+            //   },
+            //   child: const Text("1min"), // TEMPORARY
+            // ),
             GestureDetector(
               onTap: _undoLastDrink,
               child: Container(
