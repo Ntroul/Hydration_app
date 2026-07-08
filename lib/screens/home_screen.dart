@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:hydration_app/screens/trees_screen.dart';
-
 import 'package:intl/intl.dart';
 
+import 'package:hydration_app/screens/trees_screen.dart';
 import '../models/reminder.dart';
 import '../theme/app_colors.dart';
-
 import '../services/water_sync.dart';
 
 import '../services/supabase_service.dart';
@@ -78,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
     _waterListener = () {
       _loadData();
+      _loadLastHydrated();
     };
 
     WaterSync.notifier.addListener(_waterListener);
@@ -89,6 +88,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _loadData();
+      _loadLastHydrated();
+      WaterSync.notify();
     }
   }
 

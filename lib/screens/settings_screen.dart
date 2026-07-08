@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../main.dart';
 import '../models/user_profile.dart';
 import '../services/notification_services.dart';
 import '../services/supabase_service.dart';
@@ -45,10 +46,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final data = await _supabaseService.getProfile();
 
     setState(() {
-      _activityLevel = int.tryParse(data['activity_level'].toString()) ?? 1;
+      _activityLevel =
+          int.tryParse(data['activity_level'].toString()) ?? 1;
+
+      _notificationsEnabled =
+          data['notifications_enabled'] ?? true;
+
+      _reminderMinutes =
+          data['reminder_minutes'] ?? 60;
+
+      _wakeTime = parseTime(data['wake_time']);
+      _sleepTime = parseTime(data['sleep_time']);
     });
 
-    _p.updateWeight((data['weight'] as num).toDouble());
     _p.updateWeight((data['weight'] as num).toDouble());
     _p.updateAge(data['age'] ?? 0);
   }

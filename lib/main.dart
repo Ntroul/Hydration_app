@@ -17,6 +17,29 @@ import 'screens/onboarding_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+TimeOfDay parseTime(String time) {
+  final parts = time.split(' ');
+
+  final hm = parts[0].split(':');
+  int hour = int.parse(hm[0]);
+  final minute = int.parse(hm[1]);
+
+  final period = parts[1];
+
+  if (period == 'PM' && hour != 12) {
+    hour += 12;
+  }
+
+  if (period == 'AM' && hour == 12) {
+    hour = 0;
+  }
+
+  return TimeOfDay(
+    hour: hour,
+    minute: minute,
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -84,11 +107,24 @@ class _RootRouterState extends State<_RootRouter> {
 
     final existing = await Supabase.instance.client
         .from('profiles')
-        .select('id, name, age, weight, location , daily_goal')
+        .select('id, name, age, weight, location , daily_goal , notifications_enabled, reminder_minutes, wake_time, sleep_time')
         .eq('id', userId)
         .maybeSingle();
 
     if (existing != null) {
+
+      if (existing['notifications_enabled'] == true &&
+          existing['wake_time'] != null &&
+          existing['sleep_time'] != null &&
+          existing['reminder_minutes'] != null) {
+
+        await NotificationService.scheduleDailyReminders(
+          wakeTime: parseTime(existing['wake_time']),
+          sleepTime: parseTime(existing['sleep_time']),
+          intervalMinutes: existing['reminder_minutes'] as int,
+        );
+      }
+
       _profile.completeOnboarding(
         name: existing['name'] ?? '',
         age: existing['age'] ?? 0,

@@ -10,7 +10,6 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse response) async {
   if (response.actionId == 'drink_water') {
