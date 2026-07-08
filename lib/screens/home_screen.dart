@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:hydration_app/screens/trees_screen.dart';
+
+import 'package:intl/intl.dart';
+
 import '../models/reminder.dart';
-import '../services/notification_services.dart';
 import '../theme/app_colors.dart';
 
 import '../services/water_sync.dart';
@@ -26,6 +28,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
   final _supabase = Supabase.instance.client;
 
   late AnimationController _fillController;
+
+  DateTime? _lastHydrated;
 
   double get _progress {
     if (_goal <= 0) return 0.0;
@@ -70,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     );
 
     _loadData();
+    _loadLastHydrated();
 
     _waterListener = () {
       _loadData();
@@ -153,6 +158,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
       ..reset()
       ..forward();
   }
+
+  Future<void> _loadLastHydrated() async {
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) return;
+
+    final profile = await Supabase.instance.client
+        .from('profiles')
+        .select('last_hydrated')
+        .eq('id', user.id)
+        .single();
+
+    final value = profile['last_hydrated'];
+
+    setState(() {
+      _lastHydrated =
+      value == null ? null : DateTime.parse(value);
+    });
+  }
+
 
   Future<void> _loadProfile() async {
     // final user = Supabase.instance.client.auth.currentUser;
@@ -547,7 +572,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
             iconColor: AppColors.primary,
             iconBg: AppColors.surface, // or primary light
             label: 'Last Hydrated',
-            value: next?.time ?? '—',
+            value: _lastHydrated == null
+                ? '—'
+                : DateFormat('HH:mm').format(_lastHydrated!),
           ),
         ),
 
