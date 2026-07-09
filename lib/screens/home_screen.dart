@@ -1,9 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 
 import 'package:hydration_app/screens/trees_screen.dart';
-import '../models/reminder.dart';
 import '../theme/app_colors.dart';
 import '../services/water_sync.dart';
 
@@ -179,7 +180,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     });
   }
 
-
   Future<void> _loadProfile() async {
     // final user = Supabase.instance.client.auth.currentUser;
     final profile = await _supabaseService.getProfile();
@@ -188,10 +188,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
       _goal = (profile['daily_goal'] ?? 0).toDouble();
     });
   }
-
+  int _streak = 0;
   Future<void> _loadData() async {
     await _loadProfile();
 
+    final streak = await _calculateStreak();
     final user = _supabase.auth.currentUser;
 
     if (user == null) return;
@@ -218,7 +219,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
     setState(() {
       _consumed = total.clamp(0.0, _goal);
+      _streak = streak;
     });
+  }
+
+  Future<int> _calculateStreak() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return 0;
+
+    final profile = await _supabaseService.getProfile();
+    final goal = (profile['daily_goal'] as num).toDouble();
+
+    final logs = await _supabase
+        .from('water_logs')
+        .select('amount, created_at')
+        .eq('user_id', user.id);
+
+    final Map<String, double> dailyTotals = {};
+
+    for (final log in logs) {
+      final date = DateTime.parse(log['created_at']);
+
+      final key =
+          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+
+      dailyTotals[key] =
+          (dailyTotals[key] ?? 0) + (log['amount'] as num).toDouble();
+    }
+
+    int streak = 0;
+    DateTime day = DateTime.now();
+
+    while (true) {
+      final key =
+          "${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
+
+      if ((dailyTotals[key] ?? 0) >= goal) {
+        streak++;
+        day = day.subtract(const Duration(days: 1));
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   }
 
   @override
@@ -558,12 +602,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     );
   }
 
-
   Widget _buildStatsRow() {
-    final next = sampleReminders
-        .where((r) => r.status == ReminderStatus.upcoming)
-        .firstOrNull;
-
     return Row(
       children: [
         const SizedBox(width: 12),
@@ -571,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
           child: _StatCard(
             icon: Icons.alarm_outlined,
             iconColor: AppColors.primary,
-            iconBg: AppColors.surface, // or primary light
+            iconBg: AppColors.primaryLight, 
             label: 'Last Hydrated',
             value: _lastHydrated == null
                 ? '—'
@@ -583,9 +622,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
           child: _StatCard(
             icon: Icons.local_fire_department,
             iconColor: AppColors.streakOrange,
-            iconBg: AppColors.surface,
-            label: 'Avg. Daily Intake',
-            value: next?.time ?? '—',
+            iconBg: const Color((0xFFFFFE0B2)),
+            label: 'Current Streak',
+            value: '$_streak days',
           ),
         ),
       ],
