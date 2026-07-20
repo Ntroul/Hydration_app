@@ -16,7 +16,7 @@ class TreesScreenState extends State<TreesScreen> {
     return Scaffold(
       appBar: AppBar(),
       body: const Center(
-        child: Text('Trees Screen'),
+        child: Text('Coming Soon'),
       ),
     );
   }

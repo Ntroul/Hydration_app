@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
   late AnimationController _fillController;
 
   DateTime? _lastHydrated;
+  int _streak = 0;
 
   double get _progress {
     if (_goal <= 0) return 0.0;
@@ -103,12 +104,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
   Future<void> _addWater(double ml) async {
     final user = _supabase.auth.currentUser;
+    if (_consumed >= _goal || user == null) return;
 
-    if(_consumed >= _goal){
-      return;
-    }
-
-    if (user == null) return;
+    final newConsumed = (_consumed + ml).clamp(0.0, _goal);
+    final goalJustReached = newConsumed >= _goal && _consumed < _goal;
 
     await _supabase.from('water_logs').insert({
       'user_id': user.id,
@@ -120,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     }).eq('id', user.id);
 
     setState(() {
-      _consumed = (_consumed + ml).clamp(0.0, _goal);
+      _consumed = newConsumed;
     });
 
     WaterSync.notify();
@@ -128,11 +127,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     _fillController
       ..reset()
       ..forward();
+
+    if (goalJustReached) {
+      await Future.delayed(const Duration(milliseconds: 900));
+
+      final newStreak = await _calculateStreak();
+
+      setState(() {
+        _consumed = 0;
+        _streak   = newStreak;
+      });
+
+      _fillController
+        ..reset()
+        ..forward();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('🌳', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Goal reached! Streak: $newStreak day${newStreak == 1 ? '' : 's'} 🔥',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF639922),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _undoLastDrink() async {
     final user = _supabase.auth.currentUser;
-
     if (user == null) return;
 
     final lastDrink = await _supabase
@@ -150,7 +191,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
     setState(() {
       _consumed -= (lastDrink['amount'] as num).toDouble();
-
       if (_consumed < 0) {
         _consumed = 0;
       }
@@ -163,7 +203,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
   Future<void> _loadLastHydrated() async {
     final user = Supabase.instance.client.auth.currentUser;
-
     if (user == null) return;
 
     final profile = await Supabase.instance.client
@@ -175,8 +214,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     final value = profile['last_hydrated'];
 
     setState(() {
-      _lastHydrated =
-      value == null ? null : DateTime.parse(value);
+      _lastHydrated = value == null ? null : DateTime.parse(value);
     });
   }
 
@@ -188,31 +226,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
       _goal = (profile['daily_goal'] ?? 0).toDouble();
     });
   }
-  int _streak = 0;
+
   Future<void> _loadData() async {
     await _loadProfile();
 
     final streak = await _calculateStreak();
     final user = _supabase.auth.currentUser;
-
     if (user == null) return;
-
-    // final today = DateTime.now();
-    //
-    // final startOfDay = DateTime(
-    //   today.year,
-    //   today.month,
-    //   today.day,
-    // );
 
     final logs = await _supabase
         .from('water_logs')
         .select()
         .eq('user_id', user.id);
-        // .gte('created_at', startOfDay.toIso8601String());
 
     double total = 0;
-
     for (final log in logs) {
       total += (log['amount'] as num).toDouble();
     }
@@ -228,7 +255,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
     if (user == null) return 0;
 
     final profile = await _supabaseService.getProfile();
-    final goal = (profile['daily_goal'] as num).toDouble();
+    final goal    = (profile['daily_goal'] as num).toDouble();
+    if (goal <= 0) return 0;
 
     final logs = await _supabase
         .from('water_logs')
@@ -236,27 +264,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
         .eq('user_id', user.id);
 
     final Map<String, double> dailyTotals = {};
-
     for (final log in logs) {
-      final date = DateTime.parse(log['created_at']);
-
-      final key =
-          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
+      final local = DateTime.parse(log['created_at'] as String).toLocal();
+      final key   =
+          '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
       dailyTotals[key] =
           (dailyTotals[key] ?? 0) + (log['amount'] as num).toDouble();
     }
 
-    int streak = 0;
-    DateTime day = DateTime.now();
+    final now      = DateTime.now();
+    final todayKey =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayDone  = (dailyTotals[todayKey] ?? 0) >= goal;
 
-    while (true) {
+    final startOffset = todayDone ? 0 : 1;
+
+    int streak = 0;
+    for (int i = startOffset; i <= 365; i++) {
+      final d   = now.subtract(Duration(days: i));
       final key =
-          "${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
       if ((dailyTotals[key] ?? 0) >= goal) {
         streak++;
-        day = day.subtract(const Duration(days: 1));
       } else {
         break;
       }
@@ -431,14 +461,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
               ),
               const Text('ml',
                   style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
-
               Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
                   Container(
                     width: 56,
                     height: 180,
-                    padding: const EdgeInsets.all(2), // border thickness
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(
@@ -564,7 +593,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
           ],
         ),
         const SizedBox(height: 12),
-
         GestureDetector(
           onTap: () => _addWater(250),
           child: Container(
@@ -610,21 +638,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
           child: _StatCard(
             icon: Icons.alarm_outlined,
             iconColor: AppColors.primary,
-            iconBg: AppColors.primaryLight, 
+            iconBg: AppColors.primaryLight,
             label: 'Last Hydrated',
             value: _lastHydrated == null
                 ? '—'
                 : DateFormat('HH:mm').format(_lastHydrated!),
           ),
         ),
-
         Expanded(
           child: _StatCard(
             icon: Icons.local_fire_department,
             iconColor: AppColors.streakOrange,
             iconBg: const Color((0xFFFFFE0B2)),
             label: 'Current Streak',
-            value: '$_streak days',
+            value: '$_streak day${_streak == 1 ? '' : 's'}',
           ),
         ),
       ],
