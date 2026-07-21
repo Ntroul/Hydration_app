@@ -187,14 +187,14 @@ class _LoginScreenState extends State<LoginScreen>
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Hydration',
+                  Text('Kora',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         letterSpacing: -0.3,
                       )),
-                  Text('Coach',
+                  Text('Hydration Tracker',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white70,

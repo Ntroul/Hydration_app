@@ -695,7 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: AppColors.primary, size: 26),
           ),
           const SizedBox(height: 10),
-          const Text('Hydration Coach',
+          const Text('Kora',
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

@@ -252,14 +252,14 @@ class _RegisterScreenState extends State<RegisterScreen>
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Hydration',
+                  Text('Kora',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         letterSpacing: -0.3,
                       )),
-                  Text('Coach',
+                  Text('Hydration Coach',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.white70,
