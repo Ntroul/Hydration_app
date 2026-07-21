@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../models/user_profile.dart';
 import '../services/notification_services.dart';
@@ -7,16 +8,19 @@ import '../theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   final UserProfile profile;
+  final VoidCallback onLogout;
 
-
-  const SettingsScreen({super.key, required this.profile});
+  const SettingsScreen({
+    super.key,
+    required this.profile,
+    required this.onLogout,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -26,9 +30,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final SupabaseService _supabaseService = SupabaseService();
   bool _notificationsEnabled = true;
   int _reminderMinutes = 60;
-  TimeOfDay _wakeTime  = const TimeOfDay(hour: 8,  minute: 0);
+  TimeOfDay _wakeTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _sleepTime = const TimeOfDay(hour: 22, minute: 0);
-  int _activityLevel   = 1;
+  int _activityLevel = 1;
 
   static const _activityLabels = ['Low', 'Moderate', 'High'];
 
@@ -46,14 +50,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final data = await _supabaseService.getProfile();
 
     setState(() {
-      _activityLevel =
-          int.tryParse(data['activity_level'].toString()) ?? 1;
+      _activityLevel = int.tryParse(data['activity_level'].toString()) ?? 1;
 
-      _notificationsEnabled =
-          data['notifications_enabled'] ?? true;
+      _notificationsEnabled = data['notifications_enabled'] ?? true;
 
-      _reminderMinutes =
-          data['reminder_minutes'] ?? 60;
+      _reminderMinutes = data['reminder_minutes'] ?? 60;
 
       _wakeTime = parseTime(data['wake_time']);
       _sleepTime = parseTime(data['sleep_time']);
@@ -72,12 +73,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'activity_level': _activityLevel,
         'location': _p.location,
         'daily_goal': _computedGoal,
-
         'notifications_enabled': _notificationsEnabled,
         'reminder_minutes': _reminderMinutes,
         'wake_time': _wakeTime.format(context),
         'sleep_time': _sleepTime.format(context),
-
       });
 
       if (_notificationsEnabled) {
@@ -132,7 +131,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.cardBorder,
                   borderRadius: BorderRadius.circular(2),
@@ -157,8 +157,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: AppColors.text),
               decoration: InputDecoration(
                 suffixText: suffix,
-                suffixStyle: const TextStyle(
-                    fontSize: 16, color: AppColors.textMuted),
+                suffixStyle:
+                    const TextStyle(fontSize: 16, color: AppColors.textMuted),
                 hintText: '0',
                 hintStyle: const TextStyle(
                     fontSize: 28,
@@ -176,11 +176,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(
-                      color: AppColors.primary, width: 2),
+                  borderSide:
+                      const BorderSide(color: AppColors.primary, width: 2),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
               onSubmitted: (v) {
                 onSave(v);
@@ -204,8 +204,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.pop(context);
                 },
                 child: const Text('Save',
-                    style: TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600)),
+                    style:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -225,8 +225,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 22, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -251,7 +251,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildDisplayCard(),
                     const SizedBox(height: 32),
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -273,9 +272,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
-
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(color: Colors.redAccent),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await Supabase.instance.client.auth.signOut();
+                          widget.onLogout();
+                        },
+                        child: const Text(
+                          'Log out',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 32),
-
                     _buildAppInfo(),
                     const SizedBox(height: 24),
                   ],
@@ -294,13 +316,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: AppColors.primaryMid.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
           Container(
-            width: 52, height: 52,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
@@ -345,22 +367,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Name',
             trailing: Text(
               _p.name.isEmpty ? '—' : _p.name,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textMuted),
+              style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
           ),
-
           _divider(),
-
           _SettingsRow(
             icon: Icons.cake_outlined,
             title: 'Age',
             trailing: GestureDetector(
               onTap: () => _showEditSheet(
-                title: 'Edit age',
-                initialValue: _p.age == 0 ? '' : _p.age.toString(),
-                suffix: 'yrs',
-                keyboardType: TextInputType.number,
+                  title: 'Edit age',
+                  initialValue: _p.age == 0 ? '' : _p.age.toString(),
+                  suffix: 'yrs',
+                  keyboardType: TextInputType.number,
                   onSave: (v) async {
                     final age = int.tryParse(v);
 
@@ -371,17 +390,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     await _supabaseService.updateProfile({
                       'age': age,
                     });
-                  }
-              ),
+                  }),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: AppColors.primaryMid
-                          .withValues(alpha: 0.4)),
+                      color: AppColors.primaryMid.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -407,9 +424,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-
           _divider(),
-
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
@@ -439,13 +454,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeTrackColor: AppColors.primary,
                     inactiveTrackColor: AppColors.ringTrack,
                     thumbColor: AppColors.primary,
-                    overlayColor:
-                    AppColors.primary.withValues(alpha: 0.1),
+                    overlayColor: AppColors.primary.withValues(alpha: 0.1),
                     trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 7),
-                    overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 14),
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 7),
+                    overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 14),
                   ),
                   child: Slider(
                     value: _p.weightKg.clamp(40, 130),
@@ -457,9 +471,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-
           _divider(),
-
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
@@ -483,22 +495,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final active = _activityLevel == i;
                     return Expanded(
                       child: Padding(
-                        padding:
-                        EdgeInsets.only(right: i < 2 ? 8 : 0),
+                        padding: EdgeInsets.only(right: i < 2 ? 8 : 0),
                         child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _activityLevel = i),
+                          onTap: () => setState(() => _activityLevel = i),
                           child: AnimatedContainer(
-                            duration:
-                            const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8),
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
                               color: active
                                   ? AppColors.primary
                                   : AppColors.background,
-                              borderRadius:
-                              BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: active
                                     ? AppColors.primary
@@ -525,16 +532,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-
           _divider(),
-
           _SettingsRow(
             icon: Icons.location_on_outlined,
             title: 'Location',
             trailing: Text(
               _p.location.isEmpty ? '—' : _p.location,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textMuted),
+              style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
           ),
         ],
@@ -557,8 +561,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Enable reminders',
             subtitle: 'Receive hydration notifications',
             value: _notificationsEnabled,
-            onChanged: (v) =>
-                setState(() => _notificationsEnabled = v),
+            onChanged: (v) => setState(() => _notificationsEnabled = v),
           ),
           _divider(),
           _SettingsRow(
@@ -567,11 +570,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: DropdownButton<int>(
               value: _reminderMinutes,
               underline: const SizedBox(),
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.text),
+              style: const TextStyle(fontSize: 13, color: AppColors.text),
               items: const [
-                DropdownMenuItem(value: 30,  child: Text('30 min')),
-                DropdownMenuItem(value: 60,  child: Text('1 hour')),
+                DropdownMenuItem(value: 30, child: Text('30 min')),
+                DropdownMenuItem(value: 60, child: Text('1 hour')),
                 DropdownMenuItem(value: 120, child: Text('2 hours')),
               ],
               onChanged: (v) {
@@ -617,15 +619,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: GestureDetector(
               onTap: NotificationService.showTestNotification,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 7),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                      AppColors.primary.withValues(alpha: 0.25),
+                      color: AppColors.primary.withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -658,40 +659,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.opacity,
             title: 'Units',
             trailing: const Text('ml',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textMuted)),
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
           ),
           _divider(),
           _SettingsRow(
             icon: Icons.schedule_outlined,
             title: 'Time format',
             trailing: const Text('24h',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textMuted)),
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
           ),
           _divider(),
           _SettingsRow(
             icon: Icons.palette_outlined,
             title: 'Theme',
             trailing: const Text('Light · Blue',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textMuted)),
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
           ),
         ],
       ),
     );
   }
 
-
-
-
-
   Widget _buildAppInfo() {
     return Center(
       child: Column(
         children: [
           Container(
-            width: 52, height: 52,
+            width: 52,
+            height: 52,
             decoration: const BoxDecoration(
               color: AppColors.primaryLight,
               shape: BoxShape.circle,
@@ -707,8 +702,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: AppColors.text)),
           const SizedBox(height: 2),
           const Text('Version 1.0.0',
-              style: TextStyle(
-                  fontSize: 12, color: AppColors.textMuted)),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
         ],
       ),
     );
@@ -735,8 +729,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
-  final String   title;
-  final Widget   trailing;
+  final String title;
+  final Widget trailing;
 
   const _SettingsRow({
     required this.icon,
@@ -767,10 +761,10 @@ class _SettingsRow extends StatelessWidget {
 }
 
 class _ToggleRow extends StatelessWidget {
-  final IconData           icon;
-  final String             title;
-  final String             subtitle;
-  final bool               value;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
   final ValueChanged<bool> onChanged;
 
   const _ToggleRow({
@@ -801,8 +795,7 @@ class _ToggleRow extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(subtitle,
                     style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textMuted)),
+                        fontSize: 11, color: AppColors.textMuted)),
               ],
             ),
           ),
@@ -822,7 +815,7 @@ class _ToggleRow extends StatelessWidget {
 }
 
 class _TimePill extends StatelessWidget {
-  final String       time;
+  final String time;
   final VoidCallback onTap;
 
   const _TimePill({required this.time, required this.onTap});
@@ -832,8 +825,7 @@ class _TimePill extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 12, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
           color: AppColors.primaryLight,
           borderRadius: BorderRadius.circular(20),
@@ -849,8 +841,7 @@ class _TimePill extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: AppColors.primary)),
             const SizedBox(width: 4),
-            const Icon(Icons.edit_outlined,
-                size: 12, color: AppColors.primary),
+            const Icon(Icons.edit_outlined, size: 12, color: AppColors.primary),
           ],
         ),
       ),

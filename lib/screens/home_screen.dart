@@ -133,6 +133,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin ,
 
       final newStreak = await _calculateStreak();
 
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      await _supabase
+          .from('water_logs')
+          .delete()
+          .eq('user_id', user.id)
+          .gte('created_at', startOfDay.toUtc().toIso8601String());
+
       setState(() {
         _consumed = 0;
         _streak   = newStreak;

@@ -144,6 +144,7 @@ class _RootRouterState extends State<_RootRouter> {
   void _onGoToRegister() => setState(() => _screen = 'register');
   void _onRegister()     => setState(() => _screen = 'onboarding');
   void _onBackToLogin()  => setState(() => _screen = 'login');
+  void _onLogout()       => setState(() => _screen = 'login');
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +173,7 @@ class _RootRouterState extends State<_RootRouter> {
         return ListenableBuilder(
           listenable: _profile,
           builder: (context, _) {
-            if (_profile.onboarded) return AppShell(profile: _profile);
+            if (_profile.onboarded) return AppShell(profile: _profile, onLogout: _onLogout);
             return OnboardingScreen(
               profile:    _profile,
               onComplete: () {},
@@ -181,14 +182,15 @@ class _RootRouterState extends State<_RootRouter> {
         );
 
       default: // 'app'
-        return AppShell(profile: _profile);
+        return AppShell(profile: _profile, onLogout: _onLogout);
     }
   }
 }
 
 class AppShell extends StatefulWidget {
   final UserProfile profile;
-  const AppShell({super.key, required this.profile});
+  final VoidCallback onLogout;
+  const AppShell({super.key, required this.profile, required this.onLogout});
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -202,7 +204,7 @@ class _AppShellState extends State<AppShell> {
     final screens = [
       const HomeScreen(),
       const HistoryScreen(),
-      SettingsScreen(profile: widget.profile),
+      SettingsScreen(profile: widget.profile, onLogout: widget.onLogout),
     ];
 
     return Scaffold(
@@ -218,4 +220,3 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
-
